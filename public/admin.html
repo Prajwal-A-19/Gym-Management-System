@@ -1,0 +1,1457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GymPro — Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --red:#e63946;--red-dark:#c1121f;--gold:#ffd60a;--green:#2dc653;--orange:#ff9500;--blue:#4dabf7;
+  --bg:#0a0a0f;--bg2:#111118;--bg3:#1a1a24;--bg4:#22222f;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.12);
+  --text:#f0f0f5;--muted:#7a7a8c;--muted2:#555566;
+  --sidebar-w:240px;--topbar-h:64px;
+}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;display:flex;min-height:100vh;overflow:hidden}
+::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+/* SIDEBAR */
+.sidebar{width:var(--sidebar-w);height:100vh;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto;overflow-x:hidden;position:fixed;left:0;top:0;z-index:100}
+.sidebar-logo{padding:24px 20px;border-bottom:1px solid var(--border);flex-shrink:0}
+.logo-text{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:3px}.logo-text span{color:var(--red)}
+.logo-role{font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-top:2px}
+.sidebar-section{padding:16px 12px 4px;font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;margin:2px 8px;cursor:pointer;color:var(--muted);font-size:14px;font-weight:500;transition:all .15s;text-decoration:none;border:none;background:none;width:calc(100% - 16px);text-align:left}
+.nav-item:hover{background:var(--bg3);color:var(--text)}
+.nav-item.active{background:rgba(230,57,70,0.15);color:var(--red);border-left:3px solid var(--red);border-radius:0 8px 8px 0;margin-left:8px;padding-left:9px}
+.nav-item .icon{font-size:16px;width:20px;text-align:center;flex-shrink:0}
+.sidebar-footer{margin-top:auto;padding:16px;border-top:1px solid var(--border)}
+.user-info{display:flex;align-items:center;gap:10px}
+.avatar{width:36px;height:36px;border-radius:10px;background:rgba(230,57,70,0.2);display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue';font-size:16px;color:var(--red);flex-shrink:0}
+.user-name{font-size:13px;font-weight:600}
+.user-role{font-size:11px;color:var(--muted)}
+.btn-logout{width:100%;margin-top:10px;padding:8px;background:rgba(230,57,70,0.1);border:1px solid rgba(230,57,70,0.2);border-radius:8px;color:var(--red);font-size:13px;font-family:'DM Sans';cursor:pointer;transition:all .15s}
+.btn-logout:hover{background:rgba(230,57,70,0.2)}
+
+/* MAIN */
+.main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;min-height:100vh;overflow:hidden}
+.topbar{height:var(--topbar-h);background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 28px;flex-shrink:0;position:sticky;top:0;z-index:50}
+.page-title{font-family:'Bebas Neue';font-size:24px;letter-spacing:2px}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.content{flex:1;overflow-y:auto;padding:28px}
+.tab-panel{display:none}.tab-panel.active{display:block}
+
+/* CARDS */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px;position:relative;overflow:hidden;transition:border-color .2s}
+.stat-card:hover{border-color:var(--border2)}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--accent,var(--red))}
+.stat-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px}
+.stat-val{font-family:'Bebas Neue';font-size:42px;line-height:1;color:var(--accent,var(--text))}
+.stat-sub{font-size:12px;color:var(--muted);margin-top:4px}
+.stat-icon{position:absolute;right:20px;top:50%;transform:translateY(-50%);font-size:40px;opacity:.15}
+
+/* SECTION HEADER */
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.section-title{font-family:'Bebas Neue';font-size:22px;letter-spacing:1px}
+.section-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+
+/* BUTTONS */
+.btn{padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:'DM Sans';transition:all .15s;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:var(--red);color:#fff}.btn-primary:hover{background:var(--red-dark)}
+.btn-secondary{background:var(--bg3);color:var(--text);border:1px solid var(--border2)}.btn-secondary:hover{background:var(--bg4)}
+.btn-success{background:rgba(45,198,83,0.15);color:var(--green);border:1px solid rgba(45,198,83,0.3)}.btn-success:hover{background:rgba(45,198,83,0.25)}
+.btn-danger{background:rgba(230,57,70,0.1);color:var(--red);border:1px solid rgba(230,57,70,0.2)}.btn-danger:hover{background:rgba(230,57,70,0.2)}
+.btn-sm{padding:6px 12px;font-size:12px}
+.btn-icon{padding:7px;border-radius:7px}
+
+/* TABLE */
+.table-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.table-toolbar{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.search-input{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 14px;color:var(--text);font-size:13px;font-family:'DM Sans';outline:none;min-width:200px}
+.search-input:focus{border-color:var(--red)}
+table{width:100%;border-collapse:collapse}
+thead th{padding:11px 14px;text-align:left;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:1px;background:var(--bg3);white-space:nowrap}
+tbody tr{border-top:1px solid var(--border);transition:background .1s}
+tbody tr:hover{background:rgba(255,255,255,0.02)}
+tbody td{padding:12px 14px;font-size:13px;vertical-align:middle}
+.actions-cell{display:flex;gap:6px}
+
+/* BADGES */
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;letter-spacing:.5px}
+.badge-active{background:rgba(45,198,83,0.15);color:var(--green)}
+.badge-paused{background:rgba(255,149,0,0.15);color:var(--orange)}
+.badge-inactive,.badge-expired{background:rgba(230,57,70,0.15);color:var(--red)}
+.badge-paid{background:rgba(45,198,83,0.15);color:var(--green)}
+.badge-pending{background:rgba(255,149,0,0.15);color:var(--orange)}
+.badge-failed,.badge-refunded{background:rgba(230,57,70,0.15);color:var(--red)}
+.badge-good{background:rgba(77,171,247,0.15);color:var(--blue)}
+.badge-excellent{background:rgba(45,198,83,0.15);color:var(--green)}
+.badge-fair{background:rgba(255,149,0,0.15);color:var(--orange)}
+.badge-poor,.badge-out{background:rgba(230,57,70,0.15);color:var(--red)}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;backdrop-filter:blur(4px)}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:16px;padding:28px;width:100%;max-width:600px;max-height:90vh;overflow-y:auto;transform:scale(.95);transition:transform .2s}
+.modal-overlay.open .modal{transform:scale(1)}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+.modal-title{font-family:'Bebas Neue';font-size:24px;letter-spacing:1px}
+.modal-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:20px;padding:4px;line-height:1}
+.modal-close:hover{color:var(--text)}
+.modal-footer{display:flex;gap:10px;justify-content:flex-end;margin-top:24px;padding-top:20px;border-top:1px solid var(--border)}
+
+/* FORM FIELDS */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-grid.cols-3{grid-template-columns:1fr 1fr 1fr}
+.form-col-full{grid-column:1/-1}
+.fg{display:flex;flex-direction:column;gap:6px}
+.fg label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+.fg input,.fg select,.fg textarea{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-size:13px;font-family:'DM Sans';outline:none;transition:border-color .15s;width:100%}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--red)}
+.fg select option{background:var(--bg3)}
+.fg textarea{resize:vertical;min-height:80px}
+
+/* CHARTS */
+.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+.chart-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px}
+.chart-card.full{grid-column:1/-1}
+.chart-title{font-size:14px;font-weight:600;margin-bottom:16px;color:var(--text)}
+.chart-wrap{position:relative;height:220px}
+
+/* MISC */
+.empty-state{text-align:center;padding:48px 24px;color:var(--muted)}
+.empty-state .empty-icon{font-size:48px;margin-bottom:12px}
+.plan-features{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.feat-chip{background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:2px 10px;font-size:11px;color:var(--muted)}
+.alert{padding:12px 16px;border-radius:8px;font-size:13px;margin-bottom:16px}
+.alert-warning{background:rgba(255,149,0,0.1);border:1px solid rgba(255,149,0,0.3);color:var(--orange)}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.info-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px}
+.info-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)}
+.info-row:last-child{border-bottom:none}
+.info-label{font-size:12px;color:var(--muted)}
+.info-val{font-size:13px;font-weight:500}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-text">GYM<span>PRO</span></div>
+    <div class="logo-role">Admin Panel</div>
+  </div>
+  <div class="sidebar-section">Overview</div>
+  <button class="nav-item active" data-tab="dashboard" onclick="switchTab('dashboard')"><span class="icon">📊</span> Dashboard</button>
+  <div class="sidebar-section">Management</div>
+  <button class="nav-item" data-tab="members" onclick="switchTab('members')"><span class="icon">👥</span> Members</button>
+  <button class="nav-item" data-tab="trainers" onclick="switchTab('trainers')"><span class="icon">💪</span> Trainers</button>
+  <button class="nav-item" data-tab="plans" onclick="switchTab('plans')"><span class="icon">📋</span> Plans</button>
+  <button class="nav-item" data-tab="payments" onclick="switchTab('payments')"><span class="icon">💰</span> Payments</button>
+  <div class="sidebar-section">Operations</div>
+  <button class="nav-item" data-tab="classes" onclick="switchTab('classes')"><span class="icon">🏃</span> Classes</button>
+  <button class="nav-item" data-tab="equipment" onclick="switchTab('equipment')"><span class="icon">🏋️</span> Equipment</button>
+  <button class="nav-item" data-tab="attendance" onclick="switchTab('attendance')"><span class="icon">📅</span> Attendance</button>
+  <button class="nav-item" data-tab="announcements" onclick="switchTab('announcements')"><span class="icon">📢</span> Announcements</button>
+  <button class="nav-item" data-tab="dbviewer" onclick="switchTab('dbviewer')"><span class="icon">🗄️</span> DB Viewer</button>
+  <div class="sidebar-footer">
+    <div class="user-info">
+      <div class="avatar" id="sidebar-avatar">A</div>
+      <div><div class="user-name" id="sidebar-name">Admin</div><div class="user-role">Administrator</div></div>
+    </div>
+    <button class="btn-logout" onclick="logout()">🚪 Sign Out</button>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="page-title" id="page-title">DASHBOARD</div>
+    <div class="topbar-right">
+      <span id="topbar-date" style="font-size:13px;color:var(--muted)"></span>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ═══════ DASHBOARD ═══════ -->
+    <div class="tab-panel active" id="tab-dashboard">
+      <div class="stats-grid">
+        <div class="stat-card" style="--accent:var(--blue)"><div class="stat-label">Total Members</div><div class="stat-val" id="d-total">—</div><div class="stat-sub">All registered</div><div class="stat-icon">👥</div></div>
+        <div class="stat-card" style="--accent:var(--green)"><div class="stat-label">Active Members</div><div class="stat-val" id="d-active">—</div><div class="stat-sub">Currently active</div><div class="stat-icon">✅</div></div>
+        <div class="stat-card" style="--accent:var(--gold)"><div class="stat-label">Monthly Revenue</div><div class="stat-val" id="d-revenue">—</div><div class="stat-sub">This month (₹)</div><div class="stat-icon">💰</div></div>
+        <div class="stat-card" style="--accent:var(--red)"><div class="stat-label">Today's Check-ins</div><div class="stat-val" id="d-today">—</div><div class="stat-sub">Attendance today</div><div class="stat-icon">📅</div></div>
+        <div class="stat-card" style="--accent:var(--orange)"><div class="stat-label">Pending Payments</div><div class="stat-val" id="d-pending">—</div><div class="stat-sub">Awaiting payment</div><div class="stat-icon">⚠️</div></div>
+        <div class="stat-card" style="--accent:var(--blue)"><div class="stat-label">Total Trainers</div><div class="stat-val" id="d-trainers">—</div><div class="stat-sub">Staff members</div><div class="stat-icon">💪</div></div>
+        <div class="stat-card" style="--accent:var(--red)"><div class="stat-label">Expiring Plans</div><div class="stat-val" id="d-expiring">—</div><div class="stat-sub">Within 7 days</div><div class="stat-icon">⏰</div></div>
+        <div class="stat-card" style="--accent:var(--green)"><div class="stat-label">Active Plans</div><div class="stat-val" id="d-plan-count">—</div><div class="stat-sub">Membership tiers</div><div class="stat-icon">📋</div></div>
+      </div>
+      <div class="charts-grid">
+        <div class="chart-card"><div class="chart-title">📈 Attendance Trend (Last 14 Days)</div><div class="chart-wrap"><canvas id="chart-attendance"></canvas></div></div>
+        <div class="chart-card"><div class="chart-title">🥧 Plan Distribution</div><div class="chart-wrap"><canvas id="chart-plans"></canvas></div></div>
+        <div class="chart-card full"><div class="chart-title">💹 Monthly Revenue</div><div class="chart-wrap"><canvas id="chart-revenue"></canvas></div></div>
+      </div>
+      <div>
+        <div class="section-header"><div class="section-title">Recent Payments</div></div>
+        <div class="table-wrap"><table><thead><tr><th>Member</th><th>Plan</th><th>Amount</th><th>Method</th><th>Status</th><th>Date</th></tr></thead><tbody id="d-payments-body"><tr><td colspan="6" class="empty-state">Loading...</td></tr></tbody></table></div>
+      </div>
+    </div>
+
+    <!-- ═══════ MEMBERS ═══════ -->
+    <div class="tab-panel" id="tab-members">
+      <div class="section-header">
+        <div class="section-title">Members</div>
+        <div class="section-actions">
+          <input class="search-input" id="member-search" placeholder="🔍 Search name, email..." oninput="filterTable('members-body', this.value)">
+          <select class="search-input" id="member-status-filter" style="min-width:120px" onchange="loadMembers()"><option value="">All Status</option><option>Active</option><option>Paused</option><option>Inactive</option><option>Expired</option></select>
+          <button class="btn btn-primary" onclick="openMemberModal()">＋ Add Member</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table><thead><tr><th>#</th><th>Name</th><th>Email</th><th>Phone</th><th>Plan</th><th>Trainer</th><th>Status</th><th>Expires</th><th>Actions</th></tr></thead>
+        <tbody id="members-body"><tr><td colspan="9"><div class="empty-state"><div class="empty-icon">👥</div>Loading...</div></td></tr></tbody></table>
+      </div>
+    </div>
+
+    <!-- ═══════ TRAINERS ═══════ -->
+    <div class="tab-panel" id="tab-trainers">
+      <div class="section-header">
+        <div class="section-title">Trainers</div>
+        <div class="section-actions">
+          <input class="search-input" id="trainer-search" placeholder="🔍 Search trainers..." oninput="filterTable('trainers-body', this.value)">
+          <button class="btn btn-primary" onclick="openTrainerModal()">＋ Add Trainer</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table><thead><tr><th>#</th><th>Name</th><th>Email</th><th>Specialization</th><th>Experience</th><th>Rate/hr</th><th>Members</th><th>Actions</th></tr></thead>
+        <tbody id="trainers-body"></tbody></table>
+      </div>
+    </div>
+
+    <!-- ═══════ PLANS ═══════ -->
+    <div class="tab-panel" id="tab-plans">
+      <div class="section-header">
+        <div class="section-title">Membership Plans</div>
+        <button class="btn btn-primary" onclick="openPlanModal()">＋ Add Plan</button>
+      </div>
+      <div class="table-wrap">
+        <table><thead><tr><th>#</th><th>Plan Name</th><th>Price</th><th>Duration</th><th>Features</th><th>Members</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody id="plans-body"></tbody></table>
+      </div>
+    </div>
+
+    <!-- ═══════ PAYMENTS ═══════ -->
+    <div class="tab-panel" id="tab-payments">
+      <div class="section-header">
+        <div class="section-title">Payments</div>
+        <div class="section-actions">
+          <input class="search-input" id="payment-search" placeholder="🔍 Search member..." oninput="filterTable('payments-body', this.value)">
+          <select class="search-input" id="pay-status-filter" style="min-width:130px" onchange="loadPayments()"><option value="">All Status</option><option>Paid</option><option>Pending</option><option>Failed</option><option>Refunded</option></select>
+          <button class="btn btn-primary" onclick="openPaymentModal()">＋ Record Payment</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table><thead><tr><th>Receipt</th><th>Member</th><th>Plan</th><th>Amount</th><th>Method</th><th>Status</th><th>Due Date</th><th>Date</th><th>Actions</th></tr></thead>
+        <tbody id="payments-body"></tbody></table>
+      </div>
+    </div>
+
+    <!-- ═══════ CLASSES ═══════ -->
+    <div class="tab-panel" id="tab-classes">
+      <div class="section-header">
+        <div class="section-title">Classes & Schedule</div>
+        <button class="btn btn-primary" onclick="openClassModal()">＋ Add Class</button>
+      </div>
+      <div class="table-wrap">
+        <table><thead><tr><th>#</th><th>Class Name</th><th>Trainer</th><th>Day</th><th>Time</th><th>Category</th><th>Enrolled/Cap</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody id="classes-body"></tbody></table>
+      </div>
+    </div>
+
+    <!-- ═══════ EQUIPMENT ═══════ -->
+    <div class="tab-panel" id="tab-equipment">
+      <div class="section-header">
+        <div class="section-title">Equipment</div>
+        <div class="section-actions">
+          <input class="search-input" id="equip-search" placeholder="🔍 Search equipment..." oninput="filterTable('equipment-body', this.value)">
+          <button class="btn btn-primary" onclick="openEquipModal()">＋ Add Equipment</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table><thead><tr><th>#</th><th>Name</th><th>Category</th><th>Brand</th><th>Qty</th><th>Condition</th><th>Last Maintenance</th><th>Next Maintenance</th><th>Actions</th></tr></thead>
+        <tbody id="equipment-body"></tbody></table>
+      </div>
+    </div>
+
+    <!-- ═══════ ATTENDANCE ═══════ -->
+    <div class="tab-panel" id="tab-attendance">
+      <div class="section-header">
+        <div class="section-title">Attendance Log</div>
+        <button class="btn btn-primary" onclick="openAttendanceModal()">＋ Log Check-in</button>
+      </div>
+      <div class="table-wrap">
+        <table><thead><tr><th>#</th><th>Member</th><th>Check-in Time</th><th>Actions</th></tr></thead>
+        <tbody id="attendance-body"></tbody></table>
+      </div>
+    </div>
+
+    <!-- ═══════ ANNOUNCEMENTS ═══════ -->
+    <div class="tab-panel" id="tab-announcements">
+      <div class="section-header">
+        <div class="section-title">Announcements</div>
+        <button class="btn btn-primary" onclick="openAnnModal()">＋ Post Announcement</button>
+      </div>
+      <div id="ann-list" style="display:flex;flex-direction:column;gap:12px"></div>
+    </div>
+
+      <!-- ═══════ DB VIEWER ═══════ -->
+    <div class="tab-panel" id="tab-dbviewer">
+      <div class="section-header">
+        <div class="section-title">Database Viewer</div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <span style="font-size:13px;color:var(--muted)">Admin-only · SELECT queries only · Max 200 rows</span>
+          <button class="btn btn-danger btn-sm" onclick="clearDatabase()">🗑️ Clear Database</button>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:220px 1fr;gap:16px">
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:12px">
+          <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;padding:0 6px">Tables</div>
+          <div id="db-tables-list"></div>
+        </div>
+        <div>
+          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:14px">
+            <div style="font-size:12px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">Custom SQL Query</div>
+            <textarea id="db-sql" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-family:monospace;font-size:13px;resize:vertical;min-height:80px;outline:none" placeholder="SELECT * FROM members WHERE status = 'Active'"></textarea>
+            <div style="display:flex;gap:10px;margin-top:10px">
+              <button class="btn btn-primary" onclick="runDbQuery()">▶ Run Query</button>
+              <button class="btn btn-secondary" onclick="document.getElementById('db-sql').value=''">Clear</button>
+            </div>
+          </div>
+          <div id="db-results-wrap"></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- ════════ MODALS ════════ -->
+
+<!-- MEMBER MODAL -->
+<div class="modal-overlay" id="modal-member">
+  <div class="modal" style="max-width:680px">
+    <div class="modal-header"><div class="modal-title" id="modal-member-title">ADD MEMBER</div><button class="modal-close" onclick="closeModal('modal-member')">✕</button></div>
+    <div class="form-grid">
+      <div class="fg"><label>First Name *</label><input id="m-fname" placeholder="John"></div>
+      <div class="fg"><label>Last Name *</label><input id="m-lname" placeholder="Doe"></div>
+      <div class="fg"><label>Email *</label><input id="m-email" type="email" placeholder="john@email.com"></div>
+      <div class="fg"><label>Phone</label><input id="m-phone" placeholder="+91 9000000000"></div>
+      <div class="fg"><label>Gender</label><select id="m-gender"><option value="">Select</option><option>Male</option><option>Female</option><option>Other</option></select></div>
+      <div class="fg"><label>Date of Birth</label><input id="m-dob" type="date"></div>
+      <div class="fg"><label>Plan</label><select id="m-plan"><option value="">None</option></select></div>
+      <div class="fg"><label>Trainer</label><select id="m-trainer"><option value="">None</option></select></div>
+      <div class="fg"><label>Plan Start Date</label><input id="m-pstart" type="date"></div>
+      <div class="fg"><label>Plan End Date</label><input id="m-pend" type="date"></div>
+      <div class="fg"><label>Status</label><select id="m-status"><option>Active</option><option>Paused</option><option>Inactive</option><option>Expired</option></select></div>
+      <div class="fg" id="m-creds-wrap"><label>Username *</label><input id="m-username" placeholder="username"></div>
+      <div class="fg" id="m-pass-wrap"><label>Password *</label><input id="m-password" type="password" placeholder="Min 6 chars"></div>
+      <div class="fg form-col-full"><label>Address</label><input id="m-address" placeholder="Full address"></div>
+      <div class="fg"><label>Emergency Contact</label><input id="m-ec" placeholder="Contact name"></div>
+      <div class="fg"><label>Emergency Phone</label><input id="m-ep" placeholder="Phone number"></div>
+      <div class="fg form-col-full"><label>Notes</label><textarea id="m-notes" placeholder="Profile notes..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-member')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveMember()">Save Member</button>
+    </div>
+  </div>
+</div>
+
+<!-- TRAINER MODAL -->
+<div class="modal-overlay" id="modal-trainer">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title" id="modal-trainer-title">ADD TRAINER</div><button class="modal-close" onclick="closeModal('modal-trainer')">✕</button></div>
+    <div class="form-grid">
+      <div class="fg"><label>First Name *</label><input id="t-fname"></div>
+      <div class="fg"><label>Last Name *</label><input id="t-lname"></div>
+      <div class="fg"><label>Email *</label><input id="t-email" type="email"></div>
+      <div class="fg"><label>Phone</label><input id="t-phone"></div>
+      <div class="fg"><label>Specialization</label><input id="t-spec" placeholder="e.g. Strength & Conditioning"></div>
+      <div class="fg"><label>Experience (years)</label><input id="t-exp" type="number" min="0"></div>
+      <div class="fg"><label>Hourly Rate (₹)</label><input id="t-rate" type="number" min="0"></div>
+      <div class="fg" id="t-creds-wrap"><label>Username *</label><input id="t-username"></div>
+      <div class="fg" id="t-pass-wrap"><label>Password *</label><input id="t-password" type="password"></div>
+      <div class="fg form-col-full"><label>Bio</label><textarea id="t-bio" placeholder="Trainer bio..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-trainer')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveTrainer()">Save Trainer</button>
+    </div>
+  </div>
+</div>
+
+<!-- PLAN MODAL -->
+<div class="modal-overlay" id="modal-plan">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title" id="modal-plan-title">ADD PLAN</div><button class="modal-close" onclick="closeModal('modal-plan')">✕</button></div>
+    <div class="form-grid">
+      <div class="fg"><label>Plan Name *</label><input id="p-name" placeholder="e.g. Elite"></div>
+      <div class="fg"><label>Price (₹) *</label><input id="p-price" type="number" min="0"></div>
+      <div class="fg"><label>Duration (days)</label><input id="p-duration" type="number" value="30" min="1"></div>
+      <div class="fg"><label>Status</label><select id="p-active"><option value="1">Active</option><option value="0">Inactive</option></select></div>
+      <div class="fg form-col-full"><label>Features (pipe-separated: Feature1|Feature2)</label><input id="p-features" placeholder="Gym Access|Classes|Locker Room"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-plan')">Cancel</button>
+      <button class="btn btn-primary" onclick="savePlan()">Save Plan</button>
+    </div>
+  </div>
+</div>
+
+<!-- PAYMENT MODAL -->
+<div class="modal-overlay" id="modal-payment">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title" id="modal-payment-title">RECORD PAYMENT</div><button class="modal-close" onclick="closeModal('modal-payment')">✕</button></div>
+    <div class="form-grid">
+      <div class="fg form-col-full"><label>Member *</label><select id="pay-member"><option value="">Select member...</option></select></div>
+      <div class="fg"><label>Plan</label><select id="pay-plan"><option value="">Select plan...</option></select></div>
+      <div class="fg"><label>Amount (₹) *</label><input id="pay-amount" type="number" min="0"></div>
+      <div class="fg"><label>Payment Method</label><select id="pay-method"><option>Cash</option><option>Card</option><option>UPI</option><option>Bank Transfer</option><option>Other</option></select></div>
+      <div class="fg"><label>Status</label><select id="pay-status"><option>Paid</option><option>Pending</option><option>Failed</option><option>Refunded</option></select></div>
+      <div class="fg"><label>Due Date</label><input id="pay-due" type="date"></div>
+      <div class="fg form-col-full"><label>Notes</label><textarea id="pay-notes" placeholder="Payment notes..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-payment')">Cancel</button>
+      <button class="btn btn-primary" onclick="savePayment()">Save Payment</button>
+    </div>
+  </div>
+</div>
+
+<!-- CLASS MODAL -->
+<div class="modal-overlay" id="modal-class">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title" id="modal-class-title">ADD CLASS</div><button class="modal-close" onclick="closeModal('modal-class')">✕</button></div>
+    <div class="form-grid">
+      <div class="fg"><label>Class Name *</label><input id="c-name" placeholder="HIIT Blast"></div>
+      <div class="fg"><label>Category</label><input id="c-cat" placeholder="Cardio, Yoga, Strength..."></div>
+      <div class="fg"><label>Trainer</label><select id="c-trainer"><option value="">No Trainer</option></select></div>
+      <div class="fg"><label>Day *</label><select id="c-day"><option>Monday</option><option>Tuesday</option><option>Wednesday</option><option>Thursday</option><option>Friday</option><option>Saturday</option><option>Sunday</option></select></div>
+      <div class="fg"><label>Start Time *</label><input id="c-start" type="time"></div>
+      <div class="fg"><label>End Time *</label><input id="c-end" type="time"></div>
+      <div class="fg"><label>Capacity</label><input id="c-cap" type="number" value="20" min="1"></div>
+      <div class="fg"><label>Status</label><select id="c-active"><option value="1">Active</option><option value="0">Inactive</option></select></div>
+      <div class="fg form-col-full"><label>Description</label><textarea id="c-desc"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-class')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveClass()">Save Class</button>
+    </div>
+  </div>
+</div>
+
+<!-- EQUIPMENT MODAL -->
+<div class="modal-overlay" id="modal-equip">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title" id="modal-equip-title">ADD EQUIPMENT</div><button class="modal-close" onclick="closeModal('modal-equip')">✕</button></div>
+    <div class="form-grid">
+      <div class="fg"><label>Name *</label><input id="e-name" placeholder="Treadmill"></div>
+      <div class="fg"><label>Category *</label><input id="e-cat" placeholder="Cardio, Strength..."></div>
+      <div class="fg"><label>Brand</label><input id="e-brand" placeholder="LifeFitness"></div>
+      <div class="fg"><label>Quantity</label><input id="e-qty" type="number" value="1" min="1"></div>
+      <div class="fg"><label>Condition</label><select id="e-cond"><option>Excellent</option><option>Good</option><option>Fair</option><option>Poor</option><option>Out of Service</option></select></div>
+      <div class="fg"><label>Purchase Date</label><input id="e-pdate" type="date"></div>
+      <div class="fg"><label>Last Maintenance</label><input id="e-lmaint" type="date"></div>
+      <div class="fg"><label>Next Maintenance</label><input id="e-nmaint" type="date"></div>
+      <div class="fg form-col-full"><label>Notes</label><textarea id="e-notes"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-equip')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEquip()">Save Equipment</button>
+    </div>
+  </div>
+</div>
+
+<!-- ATTENDANCE MODAL -->
+<div class="modal-overlay" id="modal-attendance">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-header"><div class="modal-title">LOG CHECK-IN</div><button class="modal-close" onclick="closeModal('modal-attendance')">✕</button></div>
+    <div class="fg" style="margin-bottom:14px"><label>Member *</label><select id="att-member"><option value="">Select member...</option></select></div>
+    <div class="fg"><label>Check-in Time</label><input id="att-time" type="datetime-local"></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-attendance')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveAttendance()">Log Check-in</button>
+    </div>
+  </div>
+</div>
+
+<!-- ANNOUNCEMENT MODAL -->
+<div class="modal-overlay" id="modal-ann">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-header"><div class="modal-title" id="modal-ann-title">POST ANNOUNCEMENT</div><button class="modal-close" onclick="closeModal('modal-ann')">✕</button></div>
+    <div class="form-grid" style="grid-template-columns:1fr">
+      <div class="fg"><label>Title *</label><input id="ann-title" placeholder="Announcement title"></div>
+      <div class="fg"><label>Audience</label><select id="ann-aud"><option>All</option><option>Members</option><option>Trainers</option></select></div>
+      <div class="fg"><label>Expires At</label><input id="ann-exp" type="date"></div>
+      <div class="fg"><label>Body *</label><textarea id="ann-body" style="min-height:120px" placeholder="Announcement details..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-ann')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveAnn()">Post</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast" style="position:fixed;bottom:28px;right:28px;background:var(--bg3);border:1px solid var(--border2);border-radius:10px;padding:14px 20px;font-size:14px;z-index:9999;display:none;max-width:320px;box-shadow:0 8px 32px rgba(0,0,0,.4)"></div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+//  GymPro Admin Panel — fully corrected JS
+// ══════════════════════════════════════════════════════════════
+
+// ── AUTH GUARD (runs synchronously, stops everything if not admin) ──
+const token    = localStorage.getItem('token');
+const uname    = localStorage.getItem('username') || 'Admin';
+const userRole = localStorage.getItem('role');
+
+if (!token || userRole !== 'Admin') {
+  // Stop ALL further JS execution and redirect
+  document.body.innerHTML = '';
+  location.replace('login.html');
+  throw new Error('Unauthorized');   // halts remaining inline script
+}
+
+// ── bfcache guard (page restored from browser cache → re-auth) ──
+window.addEventListener('pageshow', e => {
+  if (e.persisted && !localStorage.getItem('token')) {
+    location.replace('login.html');
+  }
+});
+
+// ── XSS helper ──
+const esc = s => String(s == null ? '' : s)
+  .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+  .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+
+// ── Set sidebar info ──
+document.getElementById('sidebar-name').textContent = uname;
+document.getElementById('sidebar-avatar').textContent = uname[0].toUpperCase();
+document.getElementById('topbar-date').textContent =
+  new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+// ── State ──
+let editId = null, editType = null;
+let allMembers = [], allTrainers = [], allPlans = [], allClassesData = [];
+
+// ══════════════════════════════════════════════════════════════
+//  API wrapper — every request includes Bearer token
+// ══════════════════════════════════════════════════════════════
+async function api(path, opts = {}) {
+  opts.headers = {
+    'Authorization': `Bearer ${token}`,
+    'Content-Type': 'application/json',
+    ...opts.headers
+  };
+  try {
+    const res = await fetch('/api/admin/' + path, opts);
+    if (res.status === 401) {
+      toast('Session expired — signing out...', false);
+      setTimeout(logout, 1500);
+      return null;
+    }
+    if (res.status === 403) {
+      toast('Access denied.', false);
+      return null;
+    }
+    return res;
+  } catch (e) {
+    toast('Network error: ' + e.message, false);
+    return null;
+  }
+}
+
+// Safe JSON helper — returns null instead of throwing
+async function safeJson(res) {
+  if (!res) return null;
+  try { return await res.json(); } catch { return null; }
+}
+
+// ══════════════════════════════════════════════════════════════
+//  Toast notifications
+// ══════════════════════════════════════════════════════════════
+function toast(msg, ok = true) {
+  const el = document.getElementById('toast');
+  el.textContent = (ok ? '✅ ' : '❌ ') + msg;
+  el.style.borderColor = ok ? 'rgba(45,198,83,0.4)' : 'rgba(230,57,70,0.4)';
+  el.style.display = 'block';
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.style.display = 'none', 3500);
+}
+
+// ══════════════════════════════════════════════════════════════
+//  Navigation
+// ══════════════════════════════════════════════════════════════
+const TAB_LOADERS = {
+  dashboard:     loadDashboard,
+  members:       loadMembers,
+  trainers:      loadTrainers,
+  plans:         loadPlans,
+  payments:      loadPayments,
+  classes:       loadClasses,
+  equipment:     loadEquipment,
+  attendance:    loadAttendance,
+  announcements: loadAnnouncements,
+  dbviewer:      loadDbViewer,
+};
+
+function switchTab(name) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const panel = document.getElementById('tab-' + name);
+  if (panel) panel.classList.add('active');
+  const btn = document.querySelector(`.nav-item[data-tab="${name}"]`);
+  if (btn) btn.classList.add('active');
+  document.getElementById('page-title').textContent = name.toUpperCase();
+  if (TAB_LOADERS[name]) TAB_LOADERS[name]();
+}
+
+function logout() {
+  localStorage.clear();
+  sessionStorage.setItem('logout', '1');
+  location.replace('login.html');
+}
+
+function closeModal(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.remove('open');
+  editId = null; editType = null;
+}
+
+function openModal(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.add('open');
+}
+
+// Close modal on overlay click
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) overlay.classList.remove('open');
+  });
+});
+
+// ── Table text filter ──
+function filterTable(tbodyId, q) {
+  document.querySelectorAll('#' + tbodyId + ' tr').forEach(r => {
+    r.style.display = r.textContent.toLowerCase().includes(q.toLowerCase()) ? '' : 'none';
+  });
+}
+
+// ── Status badge ──
+function badge(val) {
+  if (!val) return '<span class="badge" style="background:var(--bg3);color:var(--muted)">—</span>';
+  return `<span class="badge badge-${val.toLowerCase().replace(/\s+/g,'')}">${esc(val)}</span>`;
+}
+
+// ── Form helpers ──
+const gv = id => document.getElementById(id)?.value?.trim() || '';
+function clearForm(ids) { ids.forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; }); }
+function sv(id, val) { const el = document.getElementById(id); if (el) el.value = val ?? ''; }
+
+// ══════════════════════════════════════════════════════════════
+//  DASHBOARD
+// ══════════════════════════════════════════════════════════════
+let charts = {};
+
+async function loadDashboard() {
+  const res = await api('dashboard');
+  const d = await safeJson(res);
+  if (!d) return;
+
+  sv('d-total',    d.totalMembers);
+  sv_text('d-total',    d.totalMembers);
+  sv_text('d-active',   d.activeMembers);
+  sv_text('d-revenue',  '₹' + (d.monthlyRevenue || 0).toLocaleString('en-IN'));
+  sv_text('d-today',    d.todayAttendance);
+  sv_text('d-pending',  d.pendingPayments);
+  sv_text('d-trainers', d.totalTrainers);
+  sv_text('d-expiring', d.expiringPlans);
+  sv_text('d-plan-count', d.planDistribution.length);
+
+  const att = [...(d.attendanceTrend || [])].reverse();
+  makeChart('chart-attendance','line', att.map(a=>a.date.slice(5)), att.map(a=>a.count),'Attendance','#4dabf7');
+
+  makeChart('chart-plans','doughnut', d.planDistribution.map(p=>p.name), d.planDistribution.map(p=>p.count),
+    'Members', ['#e63946','#4dabf7','#2dc653','#ffd60a','#ff9500']);
+
+  const rev = [...(d.revenueByMonth || [])].reverse();
+  makeChart('chart-revenue','bar', rev.map(r=>r.month), rev.map(r=>r.total),'Revenue (₹)','#ffd60a');
+
+  const tbody = document.getElementById('d-payments-body');
+  tbody.innerHTML = (d.recentPayments || []).map(p => `<tr>
+    <td><strong>${esc(p.member_name) || '—'}</strong></td>
+    <td>${esc(p.plan_name) || '—'}</td>
+    <td>₹${(p.amount || 0).toLocaleString('en-IN')}</td>
+    <td>${esc(p.method)}</td>
+    <td>${badge(p.status)}</td>
+    <td>${p.payment_date ? new Date(p.payment_date).toLocaleDateString('en-IN') : '—'}</td>
+  </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px">No recent payments</td></tr>';
+}
+
+function sv_text(id, val) { const el = document.getElementById(id); if (el) el.textContent = val ?? '—'; }
+
+function makeChart(id, type, labels, data, label, color) {
+  const canvas = document.getElementById(id);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  if (charts[id]) { charts[id].destroy(); delete charts[id]; }
+  const isDoughnut = type === 'doughnut';
+  charts[id] = new Chart(ctx, {
+    type,
+    data: {
+      labels,
+      datasets: [{
+        label, data,
+        backgroundColor: isDoughnut
+          ? (Array.isArray(color) ? color.map(c => c + 'aa') : color + 'aa')
+          : (Array.isArray(color) ? color[0] + '33' : color + '33'),
+        borderColor: color,
+        borderWidth: 2,
+        fill: !isDoughnut, tension: 0.4, pointRadius: 4, pointBackgroundColor: color
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { labels: { color: '#888899', font: { family: 'DM Sans' } } } },
+      scales: isDoughnut ? {} : {
+        x: { ticks: { color: '#888899' }, grid: { color: 'rgba(255,255,255,0.04)' } },
+        y: { ticks: { color: '#888899' }, grid: { color: 'rgba(255,255,255,0.04)' } }
+      }
+    }
+  });
+}
+
+// ══════════════════════════════════════════════════════════════
+//  MEMBERS
+// ══════════════════════════════════════════════════════════════
+async function loadMembers() {
+  const res = await api('members');
+  const data = await safeJson(res);
+  if (!data) return;
+  allMembers = data;
+  const tbody = document.getElementById('members-body');
+  if (!allMembers.length) {
+    tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state"><div class="empty-icon">👥</div>No members yet</div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = allMembers.map(m => `<tr>
+    <td style="color:var(--muted)">${m.id}</td>
+    <td><strong>${esc(m.first_name)} ${esc(m.last_name)}</strong></td>
+    <td style="color:var(--muted)">${esc(m.email)}</td>
+    <td style="color:var(--muted)">${esc(m.phone) || '—'}</td>
+    <td>${m.plan_name ? `<span style="color:var(--gold)">${esc(m.plan_name)}</span>` : '<span style="color:var(--muted)">None</span>'}</td>
+    <td>${m.trainer_name ? esc(m.trainer_name) : '<span style="color:var(--muted)">Unassigned</span>'}</td>
+    <td>${badge(m.status)}</td>
+    <td style="font-size:12px;color:var(--muted)">${m.plan_end_date || '—'}</td>
+    <td><div class="actions-cell">
+      <button class="btn btn-secondary btn-sm btn-icon" title="Edit" onclick="editMember(${m.id})">✏️</button>
+      <button class="btn btn-danger btn-sm btn-icon" title="Delete" onclick="deleteMember(${m.id}, '${esc(m.first_name + ' ' + m.last_name)}')">🗑️</button>
+    </div></td>
+  </tr>`).join('');
+}
+
+async function openMemberModal(id = null) {
+  editId = id; editType = 'member';
+  document.getElementById('modal-member-title').textContent = id ? 'EDIT MEMBER' : 'ADD MEMBER';
+  document.getElementById('m-creds-wrap').style.display = id ? 'none' : '';
+  document.getElementById('m-pass-wrap').style.display  = id ? 'none' : '';
+
+  await loadPlansSelect('m-plan');
+  await loadTrainersSelect('m-trainer');
+
+  if (!id) {
+    clearForm(['m-fname','m-lname','m-email','m-phone','m-dob','m-address','m-ec','m-ep','m-notes','m-username','m-password']);
+    sv('m-gender',''); sv('m-status','Active');
+  } else {
+    // Ensure allMembers is populated
+    if (!allMembers.length) await loadMembers();
+    const m = allMembers.find(x => x.id == id);
+    if (m) {
+      sv('m-fname', m.first_name);   sv('m-lname', m.last_name);
+      sv('m-email', m.email);         sv('m-phone', m.phone);
+      sv('m-gender', m.gender);       sv('m-dob',   m.date_of_birth);
+      sv('m-plan',   m.plan_id);      sv('m-trainer', m.trainer_id);
+      sv('m-pstart', m.plan_start_date); sv('m-pend', m.plan_end_date);
+      sv('m-status', m.status || 'Active');
+      sv('m-address', m.address);     sv('m-ec', m.emergency_contact);
+      sv('m-ep', m.emergency_phone);  sv('m-notes', m.profile_notes);
+    }
+  }
+  openModal('modal-member');
+}
+
+function editMember(id) { openMemberModal(id); }
+
+async function saveMember() {
+  const body = {
+    first_name: gv('m-fname'), last_name: gv('m-lname'), email: gv('m-email'),
+    phone: gv('m-phone'), gender: gv('m-gender'), date_of_birth: gv('m-dob'),
+    plan_id: gv('m-plan') || null, trainer_id: gv('m-trainer') || null,
+    plan_start_date: gv('m-pstart'), plan_end_date: gv('m-pend'),
+    status: gv('m-status'), address: gv('m-address'),
+    emergency_contact: gv('m-ec'), emergency_phone: gv('m-ep'),
+    profile_notes: gv('m-notes')
+  };
+  if (!body.first_name || !body.last_name || !body.email)
+    return toast('First name, last name and email are required.', false);
+  if (!editId) {
+    body.username = gv('m-username'); body.password = gv('m-password');
+    if (!body.username || !body.password)
+      return toast('Username and password are required.', false);
+  }
+  const res = await api(editId ? `members/${editId}` : 'members',
+    { method: editId ? 'PUT' : 'POST', body: JSON.stringify(body) });
+  const data = await safeJson(res);
+  if (!res || !res.ok) return toast((data && data.message) || 'Error saving member.', false);
+  toast(data.message);
+  closeModal('modal-member');
+  loadMembers();
+}
+
+async function deleteMember(id, name) {
+  if (!confirm(`Delete member "${name}"? This cannot be undone.`)) return;
+  const res = await api(`members/${id}`, { method: 'DELETE' });
+  const data = await safeJson(res);
+  toast(res && res.ok ? data.message : ((data && data.message) || 'Error'), res && res.ok);
+  if (res && res.ok) loadMembers();
+}
+
+// ══════════════════════════════════════════════════════════════
+//  TRAINERS
+// ══════════════════════════════════════════════════════════════
+async function loadTrainers() {
+  const res = await api('trainers');
+  const data = await safeJson(res);
+  if (!data) return;
+  allTrainers = data;
+  const tbody = document.getElementById('trainers-body');
+  if (!allTrainers.length) {
+    tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">💪</div>No trainers yet</div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = allTrainers.map(t => `<tr>
+    <td style="color:var(--muted)">${t.id}</td>
+    <td><strong>${esc(t.first_name)} ${esc(t.last_name)}</strong><br><span style="font-size:11px;color:var(--muted)">@${esc(t.username)}</span></td>
+    <td style="color:var(--muted)">${esc(t.email)}</td>
+    <td>${esc(t.specialization) || '<span style="color:var(--muted)">—</span>'}</td>
+    <td style="color:var(--blue)">${t.experience_years || 0} yrs</td>
+    <td style="color:var(--gold)">₹${(t.hourly_rate || 0).toLocaleString('en-IN')}</td>
+    <td><span class="badge badge-active">${t.member_count} members</span></td>
+    <td><div class="actions-cell">
+      <button class="btn btn-secondary btn-sm btn-icon" title="Edit" onclick="editTrainer(${t.id})">✏️</button>
+      <button class="btn btn-danger btn-sm btn-icon" title="Delete" onclick="deleteTrainer(${t.id}, '${esc(t.first_name + ' ' + t.last_name)}')">🗑️</button>
+    </div></td>
+  </tr>`).join('');
+}
+
+function openTrainerModal(id = null) {
+  editId = id; editType = 'trainer';
+  document.getElementById('modal-trainer-title').textContent = id ? 'EDIT TRAINER' : 'ADD TRAINER';
+  document.getElementById('t-creds-wrap').style.display = id ? 'none' : '';
+  document.getElementById('t-pass-wrap').style.display  = id ? 'none' : '';
+  if (!id) {
+    clearForm(['t-fname','t-lname','t-email','t-phone','t-spec','t-exp','t-rate','t-bio','t-username','t-password']);
+  } else {
+    const t = allTrainers.find(x => x.id == id);
+    if (t) {
+      sv('t-fname', t.first_name); sv('t-lname', t.last_name);
+      sv('t-email', t.email);      sv('t-phone', t.phone);
+      sv('t-spec',  t.specialization); sv('t-exp', t.experience_years);
+      sv('t-rate',  t.hourly_rate); sv('t-bio', t.bio);
+    }
+  }
+  openModal('modal-trainer');
+}
+
+function editTrainer(id) { openTrainerModal(id); }
+
+async function saveTrainer() {
+  const body = {
+    first_name: gv('t-fname'), last_name: gv('t-lname'),
+    email: gv('t-email'), phone: gv('t-phone'),
+    specialization: gv('t-spec'), experience_years: gv('t-exp'),
+    hourly_rate: gv('t-rate'), bio: gv('t-bio')
+  };
+  if (!body.first_name || !body.email) return toast('Name and email are required.', false);
+  if (!editId) {
+    body.username = gv('t-username'); body.password = gv('t-password');
+    if (!body.username || !body.password) return toast('Username and password required.', false);
+  }
+  const res = await api(editId ? `trainers/${editId}` : 'trainers',
+    { method: editId ? 'PUT' : 'POST', body: JSON.stringify(body) });
+  const data = await safeJson(res);
+  if (!res || !res.ok) return toast((data && data.message) || 'Error saving trainer.', false);
+  toast(data.message);
+  closeModal('modal-trainer');
+  loadTrainers();
+}
+
+async function deleteTrainer(id, name) {
+  if (!confirm(`Delete trainer "${name}"?`)) return;
+  const res = await api(`trainers/${id}`, { method: 'DELETE' });
+  const data = await safeJson(res);
+  toast(res && res.ok ? data.message : ((data && data.message) || 'Error'), res && res.ok);
+  if (res && res.ok) loadTrainers();
+}
+
+// ══════════════════════════════════════════════════════════════
+//  PLANS
+// ══════════════════════════════════════════════════════════════
+async function loadPlans() {
+  const res = await api('plans');
+  const data = await safeJson(res);
+  if (!data) return;
+  allPlans = data;
+  const tbody = document.getElementById('plans-body');
+  if (!allPlans.length) {
+    tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state">No plans yet</div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = allPlans.map(p => {
+    const feats = (p.features || '').split('|').filter(Boolean);
+    return `<tr>
+      <td style="color:var(--muted)">${p.id}</td>
+      <td><strong style="color:var(--gold)">${esc(p.name)}</strong></td>
+      <td style="color:var(--green)">₹${(p.price || 0).toLocaleString('en-IN')}</td>
+      <td>${p.duration_days} days</td>
+      <td><div class="plan-features">${feats.map(f => `<span class="feat-chip">${esc(f)}</span>`).join('') || '—'}</div></td>
+      <td><span class="badge badge-active">${p.member_count}</span></td>
+      <td>${p.is_active ? '<span class="badge badge-active">Active</span>' : '<span class="badge badge-inactive">Inactive</span>'}</td>
+      <td><div class="actions-cell">
+        <button class="btn btn-secondary btn-sm btn-icon" onclick="editPlan(${p.id})">✏️</button>
+        <button class="btn btn-danger btn-sm btn-icon" onclick="deletePlan(${p.id}, '${esc(p.name)}')">🗑️</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+function openPlanModal(id = null) {
+  editId = id; editType = 'plan';
+  document.getElementById('modal-plan-title').textContent = id ? 'EDIT PLAN' : 'ADD PLAN';
+  if (!id) {
+    clearForm(['p-name','p-price','p-features']);
+    sv('p-duration', 30); sv('p-active', 1);
+  } else {
+    const p = allPlans.find(x => x.id == id);
+    if (p) {
+      sv('p-name', p.name); sv('p-price', p.price);
+      sv('p-duration', p.duration_days); sv('p-features', p.features);
+      sv('p-active', p.is_active);
+    }
+  }
+  openModal('modal-plan');
+}
+
+function editPlan(id) { openPlanModal(id); }
+
+async function savePlan() {
+  const body = {
+    name: gv('p-name'), price: parseFloat(gv('p-price')),
+    duration_days: parseInt(gv('p-duration')),
+    features: gv('p-features'), is_active: gv('p-active') !== '0'
+  };
+  if (!body.name || isNaN(body.price)) return toast('Name and price required.', false);
+  const res = await api(editId ? `plans/${editId}` : 'plans',
+    { method: editId ? 'PUT' : 'POST', body: JSON.stringify(body) });
+  const data = await safeJson(res);
+  if (!res || !res.ok) return toast((data && data.message) || 'Error saving plan.', false);
+  toast(data.message);
+  closeModal('modal-plan');
+  loadPlans();
+}
+
+async function deletePlan(id, name) {
+  if (!confirm(`Delete plan "${name}"?`)) return;
+  const res = await api(`plans/${id}`, { method: 'DELETE' });
+  const data = await safeJson(res);
+  toast(res && res.ok ? data.message : ((data && data.message) || 'Error'), res && res.ok);
+  if (res && res.ok) loadPlans();
+}
+
+// ══════════════════════════════════════════════════════════════
+//  PAYMENTS
+// ══════════════════════════════════════════════════════════════
+async function loadPayments() {
+  const res = await api('payments');
+  const payments = await safeJson(res);
+  if (!payments) return;
+  const tbody = document.getElementById('payments-body');
+  if (!payments.length) {
+    tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state">No payments yet</div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = payments.map(p => `<tr>
+    <td style="font-size:11px;color:var(--muted)">${esc(p.receipt_no) || '—'}</td>
+    <td><strong>${esc(p.member_name) || '—'}</strong></td>
+    <td style="color:var(--muted)">${esc(p.plan_name) || '—'}</td>
+    <td style="color:var(--green);font-weight:600">₹${(p.amount || 0).toLocaleString('en-IN')}</td>
+    <td>${esc(p.method)}</td>
+    <td>${badge(p.status)}</td>
+    <td style="color:var(--muted);font-size:12px">${p.due_date || '—'}</td>
+    <td style="color:var(--muted);font-size:12px">${p.payment_date ? new Date(p.payment_date).toLocaleDateString('en-IN') : '—'}</td>
+    <td><div class="actions-cell">
+      <button class="btn btn-danger btn-sm btn-icon" onclick="deletePayment(${p.id})">🗑️</button>
+    </div></td>
+  </tr>`).join('');
+}
+
+async function openPaymentModal() {
+  editId = null;
+  await loadMembersSelect('pay-member');
+  await loadPlansSelect('pay-plan');
+  clearForm(['pay-amount','pay-notes','pay-due']);
+  sv('pay-method','Cash'); sv('pay-status','Paid');
+  openModal('modal-payment');
+}
+
+async function savePayment() {
+  const body = {
+    member_id: gv('pay-member'), plan_id: gv('pay-plan') || null,
+    amount: parseFloat(gv('pay-amount')), method: gv('pay-method'),
+    status: gv('pay-status'), due_date: gv('pay-due'), notes: gv('pay-notes')
+  };
+  if (!body.member_id || isNaN(body.amount)) return toast('Member and amount required.', false);
+  const res = await api('payments', { method: 'POST', body: JSON.stringify(body) });
+  const data = await safeJson(res);
+  if (!res || !res.ok) return toast((data && data.message) || 'Error recording payment.', false);
+  toast(`Payment recorded! Receipt: ${data.receipt_no}`);
+  closeModal('modal-payment');
+  loadPayments();
+}
+
+async function deletePayment(id) {
+  if (!confirm('Delete this payment record?')) return;
+  const res = await api(`payments/${id}`, { method: 'DELETE' });
+  const data = await safeJson(res);
+  toast(res && res.ok ? data.message : ((data && data.message) || 'Error'), res && res.ok);
+  if (res && res.ok) loadPayments();
+}
+
+// ══════════════════════════════════════════════════════════════
+//  CLASSES
+// ══════════════════════════════════════════════════════════════
+async function loadClasses() {
+  const res = await api('classes');
+  const data = await safeJson(res);
+  if (!data) return;
+  allClassesData = data;
+  const tbody = document.getElementById('classes-body');
+  if (!allClassesData.length) {
+    tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state">No classes yet</div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = allClassesData.map(c => `<tr>
+    <td style="color:var(--muted)">${c.id}</td>
+    <td><strong>${esc(c.name)}</strong></td>
+    <td>${esc(c.trainer_name) || '<span style="color:var(--muted)">None</span>'}</td>
+    <td>${esc(c.schedule_day)}</td>
+    <td>${esc(c.start_time)} – ${esc(c.end_time)}</td>
+    <td><span class="feat-chip">${esc(c.category) || '—'}</span></td>
+    <td>${c.enrolled_count}/${c.capacity}</td>
+    <td>${c.is_active ? '<span class="badge badge-active">Active</span>' : '<span class="badge badge-inactive">Inactive</span>'}</td>
+    <td><div class="actions-cell">
+      <button class="btn btn-secondary btn-sm btn-icon" onclick="editClass(${c.id})">✏️</button>
+      <button class="btn btn-danger btn-sm btn-icon" onclick="deleteClass(${c.id}, '${esc(c.name)}')">🗑️</button>
+    </div></td>
+  </tr>`).join('');
+}
+
+async function openClassModal(id = null) {
+  editId = id;
+  document.getElementById('modal-class-title').textContent = id ? 'EDIT CLASS' : 'ADD CLASS';
+  await loadTrainersSelect('c-trainer', true);
+  if (!id) {
+    clearForm(['c-name','c-cat','c-start','c-end','c-desc']);
+    sv('c-cap', 20); sv('c-active', 1);
+  } else {
+    let cls = allClassesData.find(x => x.id == id);
+    if (!cls) {
+      const r = await api('classes');
+      allClassesData = await safeJson(r) || [];
+      cls = allClassesData.find(x => x.id == id);
+    }
+    if (cls) {
+      sv('c-name', cls.name);   sv('c-cat',     cls.category);
+      sv('c-trainer', cls.trainer_id); sv('c-day', cls.schedule_day);
+      sv('c-start', cls.start_time);   sv('c-end',  cls.end_time);
+      sv('c-cap',   cls.capacity);     sv('c-active', cls.is_active);
+      sv('c-desc',  cls.description);
+    }
+  }
+  openModal('modal-class');
+}
+
+function editClass(id) { openClassModal(id); }
+
+async function saveClass() {
+  const body = {
+    name: gv('c-name'), category: gv('c-cat'),
+    trainer_id: gv('c-trainer') || null, schedule_day: gv('c-day'),
+    start_time: gv('c-start'), end_time: gv('c-end'),
+    capacity: parseInt(gv('c-cap')), is_active: gv('c-active') !== '0',
+    description: gv('c-desc')
+  };
+  if (!body.name || !body.start_time || !body.end_time)
+    return toast('Name and times required.', false);
+  const res = await api(editId ? `classes/${editId}` : 'classes',
+    { method: editId ? 'PUT' : 'POST', body: JSON.stringify(body) });
+  const data = await safeJson(res);
+  if (!res || !res.ok) return toast((data && data.message) || 'Error saving class.', false);
+  toast(data.message);
+  closeModal('modal-class');
+  loadClasses();
+}
+
+async function deleteClass(id, name) {
+  if (!confirm(`Delete class "${name}"?`)) return;
+  const res = await api(`classes/${id}`, { method: 'DELETE' });
+  const data = await safeJson(res);
+  toast(res && res.ok ? data.message : ((data && data.message) || 'Error'), res && res.ok);
+  if (res && res.ok) loadClasses();
+}
+
+// ══════════════════════════════════════════════════════════════
+//  EQUIPMENT
+// ══════════════════════════════════════════════════════════════
+let allEquipData = [];
+
+async function loadEquipment() {
+  const res = await api('equipment');
+  const data = await safeJson(res);
+  if (!data) return;
+  allEquipData = data;
+  const tbody = document.getElementById('equipment-body');
+  if (!allEquipData.length) {
+    tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state">No equipment yet</div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = allEquipData.map(e => `<tr>
+    <td style="color:var(--muted)">${e.id}</td>
+    <td><strong>${esc(e.name)}</strong></td>
+    <td><span class="feat-chip">${esc(e.category)}</span></td>
+    <td style="color:var(--muted)">${esc(e.brand) || '—'}</td>
+    <td style="text-align:center">${e.quantity}</td>
+    <td>${badge(e.condition)}</td>
+    <td style="font-size:12px;color:var(--muted)">${e.last_maintenance || '—'}</td>
+    <td style="font-size:12px;color:${e.next_maintenance && new Date(e.next_maintenance) < new Date() ? 'var(--orange)' : 'var(--muted)'}">${e.next_maintenance || '—'}</td>
+    <td><div class="actions-cell">
+      <button class="btn btn-secondary btn-sm btn-icon" onclick="editEquip(${e.id})">✏️</button>
+      <button class="btn btn-danger btn-sm btn-icon" onclick="deleteEquip(${e.id}, '${esc(e.name)}')">🗑️</button>
+    </div></td>
+  </tr>`).join('');
+}
+
+function openEquipModal(id = null) {
+  editId = id;
+  document.getElementById('modal-equip-title').textContent = id ? 'EDIT EQUIPMENT' : 'ADD EQUIPMENT';
+  if (!id) {
+    clearForm(['e-name','e-cat','e-brand','e-notes','e-pdate','e-lmaint','e-nmaint']);
+    sv('e-qty', 1); sv('e-cond', 'Good');
+  } else {
+    const e = allEquipData.find(x => x.id == id);
+    if (e) {
+      sv('e-name', e.name); sv('e-cat', e.category); sv('e-brand', e.brand);
+      sv('e-qty',  e.quantity); sv('e-cond', e.condition);
+      sv('e-pdate', e.purchase_date); sv('e-lmaint', e.last_maintenance);
+      sv('e-nmaint', e.next_maintenance); sv('e-notes', e.notes);
+    }
+  }
+  openModal('modal-equip');
+}
+
+function editEquip(id) { openEquipModal(id); }
+
+async function saveEquip() {
+  const body = {
+    name: gv('e-name'), category: gv('e-cat'), brand: gv('e-brand'),
+    quantity: parseInt(gv('e-qty')), condition: gv('e-cond'),
+    purchase_date: gv('e-pdate'), last_maintenance: gv('e-lmaint'),
+    next_maintenance: gv('e-nmaint'), notes: gv('e-notes')
+  };
+  if (!body.name || !body.category) return toast('Name and category required.', false);
+  const res = await api(editId ? `equipment/${editId}` : 'equipment',
+    { method: editId ? 'PUT' : 'POST', body: JSON.stringify(body) });
+  const data = await safeJson(res);
+  if (!res || !res.ok) return toast((data && data.message) || 'Error saving equipment.', false);
+  toast(data.message);
+  closeModal('modal-equip');
+  loadEquipment();
+}
+
+async function deleteEquip(id, name) {
+  if (!confirm(`Delete "${name}"?`)) return;
+  const res = await api(`equipment/${id}`, { method: 'DELETE' });
+  const data = await safeJson(res);
+  toast(res && res.ok ? data.message : ((data && data.message) || 'Error'), res && res.ok);
+  if (res && res.ok) loadEquipment();
+}
+
+// ══════════════════════════════════════════════════════════════
+//  ATTENDANCE
+// ══════════════════════════════════════════════════════════════
+async function loadAttendance() {
+  const res = await api('attendance');
+  const records = await safeJson(res);
+  if (!records) return;
+  const tbody = document.getElementById('attendance-body');
+  if (!records.length) {
+    tbody.innerHTML = `<tr><td colspan="4"><div class="empty-state">No attendance records</div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = records.map(a => `<tr>
+    <td style="color:var(--muted)">${a.id}</td>
+    <td><strong>${esc(a.member_name) || '—'}</strong></td>
+    <td>${new Date(a.check_in_time).toLocaleString('en-IN')}</td>
+    <td><button class="btn btn-danger btn-sm btn-icon" onclick="deleteAttendance(${a.id})">🗑️</button></td>
+  </tr>`).join('');
+}
+
+async function openAttendanceModal() {
+  await loadMembersSelect('att-member');
+  const now = new Date();
+  now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+  sv('att-time', now.toISOString().slice(0, 16));
+  openModal('modal-attendance');
+}
+
+async function saveAttendance() {
+  const body = { member_id: gv('att-member'), check_in_time: gv('att-time') };
+  if (!body.member_id) return toast('Select a member.', false);
+  const res = await api('attendance', { method: 'POST', body: JSON.stringify(body) });
+  const data = await safeJson(res);
+  if (!res || !res.ok) return toast((data && data.message) || 'Error logging attendance.', false);
+  toast(data.message);
+  closeModal('modal-attendance');
+  loadAttendance();
+}
+
+async function deleteAttendance(id) {
+  if (!confirm('Delete this attendance record?')) return;
+  const res = await api(`attendance/${id}`, { method: 'DELETE' });
+  const data = await safeJson(res);
+  toast(res && res.ok ? data.message : ((data && data.message) || 'Error'), res && res.ok);
+  if (res && res.ok) loadAttendance();
+}
+
+// ══════════════════════════════════════════════════════════════
+//  ANNOUNCEMENTS
+// ══════════════════════════════════════════════════════════════
+let allAnns = [];
+
+async function loadAnnouncements() {
+  const res = await api('announcements');
+  const data = await safeJson(res);
+  if (!data) return;
+  allAnns = data;
+  const container = document.getElementById('ann-list');
+  if (!allAnns.length) {
+    container.innerHTML = '<div class="empty-state"><div class="empty-icon">📢</div>No announcements</div>';
+    return;
+  }
+  container.innerHTML = allAnns.map(a => `
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+        <div>
+          <div style="font-weight:600;font-size:15px">${esc(a.title)}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px">
+            <span class="feat-chip">${esc(a.audience)}</span>
+            ${a.expires_at ? `<span style="margin-left:8px">Expires: ${esc(a.expires_at)}</span>` : ''}
+            <span style="margin-left:8px">${new Date(a.created_at).toLocaleDateString('en-IN')}</span>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-secondary btn-sm btn-icon" onclick="editAnn(${a.id})">✏️</button>
+          <button class="btn btn-danger btn-sm btn-icon" onclick="deleteAnn(${a.id})">🗑️</button>
+        </div>
+      </div>
+      <div style="color:var(--muted);font-size:14px;line-height:1.6">${esc(a.body)}</div>
+    </div>
+  `).join('');
+}
+
+function openAnnModal(id = null) {
+  editId = id;
+  document.getElementById('modal-ann-title').textContent = id ? 'EDIT ANNOUNCEMENT' : 'POST ANNOUNCEMENT';
+  if (!id) {
+    clearForm(['ann-title','ann-body','ann-exp']); sv('ann-aud','All');
+  } else {
+    const a = allAnns.find(x => x.id == id);
+    if (a) {
+      sv('ann-title', a.title); sv('ann-body', a.body);
+      sv('ann-aud', a.audience); sv('ann-exp', a.expires_at);
+    }
+  }
+  openModal('modal-ann');
+}
+
+function editAnn(id) { openAnnModal(id); }
+
+async function saveAnn() {
+  const body = {
+    title: gv('ann-title'), body: gv('ann-body'),
+    audience: gv('ann-aud'), expires_at: gv('ann-exp')
+  };
+  if (!body.title || !body.body) return toast('Title and body required.', false);
+  const res = await api(editId ? `announcements/${editId}` : 'announcements',
+    { method: editId ? 'PUT' : 'POST', body: JSON.stringify(body) });
+  const data = await safeJson(res);
+  if (!res || !res.ok) return toast((data && data.message) || 'Error saving announcement.', false);
+  toast(data.message);
+  closeModal('modal-ann');
+  loadAnnouncements();
+}
+
+async function deleteAnn(id) {
+  if (!confirm('Delete this announcement?')) return;
+  const res = await api(`announcements/${id}`, { method: 'DELETE' });
+  const data = await safeJson(res);
+  toast(res && res.ok ? data.message : ((data && data.message) || 'Error'), res && res.ok);
+  if (res && res.ok) loadAnnouncements();
+}
+
+// ══════════════════════════════════════════════════════════════
+//  DB VIEWER
+// ══════════════════════════════════════════════════════════════
+async function loadDbViewer() {
+  const res = await api('db/tables');
+  const tables = await safeJson(res);
+  if (!tables) return;
+  const el = document.getElementById('db-tables-list');
+  el.innerHTML = tables.map(t => `
+    <button id="dbt-${t}" onclick="loadTable('${t}')"
+      style="width:100%;text-align:left;padding:8px 10px;border-radius:7px;border:none;background:none;color:var(--muted);font-size:13px;font-family:'DM Sans';cursor:pointer;transition:all .15s"
+      onmouseover="if(!this.classList.contains('dbt-active'))this.style.background='var(--bg3)'"
+      onmouseout="if(!this.classList.contains('dbt-active'))this.style.background=''">
+      🗃️ ${t}
+    </button>`).join('');
+  if (tables.length) loadTable(tables[0]);
+}
+
+async function loadTable(name) {
+  document.querySelectorAll('[id^=dbt-]').forEach(b => {
+    b.style.background = ''; b.style.color = 'var(--muted)'; b.classList.remove('dbt-active');
+  });
+  const btn = document.getElementById('dbt-' + name);
+  if (btn) { btn.style.background = 'rgba(230,57,70,0.12)'; btn.style.color = 'var(--red)'; btn.classList.add('dbt-active'); }
+  document.getElementById('db-sql').value = `SELECT * FROM ${name} LIMIT 200`;
+  document.getElementById('db-results-wrap').innerHTML = '<div style="padding:20px;color:var(--muted)">Loading...</div>';
+  const res = await api(`db/table/${name}`);
+  const rows = await safeJson(res);
+  if (rows) renderDbResults(rows, `Table: ${name}`);
+}
+
+async function runDbQuery() {
+  const sql = document.getElementById('db-sql').value.trim();
+  if (!sql) return;
+  document.getElementById('db-results-wrap').innerHTML = '<div style="padding:20px;color:var(--muted)">Running...</div>';
+  const res = await api('db/query', { method: 'POST', body: JSON.stringify({ sql }) });
+  const data = await safeJson(res);
+  if (!res || !res.ok) {
+    document.getElementById('db-results-wrap').innerHTML =
+      `<div style="padding:16px;color:var(--red);background:rgba(230,57,70,.1);border:1px solid rgba(230,57,70,.2);border-radius:10px;font-family:monospace;font-size:13px">❌ ${esc((data && (data.error || data.message)) || 'Query failed')}</div>`;
+    return;
+  }
+  renderDbResults(data, 'Query Results');
+}
+
+function renderDbResults(rows, title) {
+  const wrap = document.getElementById('db-results-wrap');
+  if (!rows || !rows.length) {
+    wrap.innerHTML = `<div class="empty-state"><div class="empty-icon">🗄️</div>No rows returned</div>`;
+    return;
+  }
+  const cols = Object.keys(rows[0]);
+  wrap.innerHTML = `
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;overflow:hidden">
+      <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:13px;font-weight:600">${esc(title)}</span>
+        <span style="font-size:12px;color:var(--muted)">${rows.length} rows · ${cols.length} cols</span>
+      </div>
+      <div style="overflow-x:auto;max-height:420px;overflow-y:auto">
+        <table style="width:100%;border-collapse:collapse">
+          <thead style="position:sticky;top:0;z-index:1">
+            <tr>${cols.map(c => `<th style="padding:10px 14px;text-align:left;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:1px;background:var(--bg3);white-space:nowrap">${esc(c)}</th>`).join('')}</tr>
+          </thead>
+          <tbody>${rows.map(r => `<tr style="border-top:1px solid var(--border)">${cols.map(c => {
+            const v = r[c];
+            const disp = v === null || v === undefined
+              ? '<span style="color:var(--muted2);font-style:italic">NULL</span>'
+              : esc(String(v));
+            return `<td style="padding:9px 14px;font-size:12px;font-family:monospace;max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(String(v ?? ''))}">${disp}</td>`;
+          }).join('')}</tr>`).join('')}</tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+// ══════════════════════════════════════════════════════════════
+//  CLEAR DATABASE
+// ══════════════════════════════════════════════════════════════
+async function clearDatabase() {
+  if (!confirm('⚠️ WARNING: This will DELETE ALL members, trainers, plans, payments, classes, equipment and other data.\n\nThe admin account is preserved. Are you ABSOLUTELY sure?')) return;
+  if (!confirm('This cannot be undone. Confirm again to proceed.')) return;
+  const res = await api('db/clear', { method: 'POST' });
+  const data = await safeJson(res);
+  if (!res || !res.ok) return toast((data && data.message) || 'Error clearing database.', false);
+  toast(data.message || 'Database cleared!');
+  allMembers = []; allTrainers = []; allPlans = []; allClassesData = [];
+  loadDashboard();
+}
+
+// ══════════════════════════════════════════════════════════════
+//  SELECT HELPERS  (always fetch fresh)
+// ══════════════════════════════════════════════════════════════
+async function loadPlansSelect(selId) {
+  const res = await api('plans');
+  const plans = await safeJson(res) || [];
+  allPlans = plans;
+  const sel = document.getElementById(selId);
+  if (!sel) return;
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">None</option>' +
+    plans.map(p => `<option value="${p.id}">${esc(p.name)} (₹${p.price})</option>`).join('');
+  if (cur) sel.value = cur;
+}
+
+async function loadTrainersSelect(selId, allowEmpty = false) {
+  const res = await api('trainers/list');
+  const trainers = await safeJson(res) || [];
+  const sel = document.getElementById(selId);
+  if (!sel) return;
+  const cur = sel.value;
+  sel.innerHTML = `<option value="">${allowEmpty ? 'No Trainer' : 'None'}</option>` +
+    trainers.map(t => `<option value="${t.id}">${esc(t.name)}</option>`).join('');
+  if (cur) sel.value = cur;
+}
+
+async function loadMembersSelect(selId) {
+  const res = await api('members');
+  const members = await safeJson(res) || [];
+  allMembers = members;
+  const sel = document.getElementById(selId);
+  if (!sel) return;
+  sel.innerHTML = '<option value="">Select member...</option>' +
+    members.map(m => `<option value="${m.id}">${esc(m.first_name)} ${esc(m.last_name)}</option>`).join('');
+}
+
+// ══════════════════════════════════════════════════════════════
+//  INITIALISE — load dashboard on page ready
+// ══════════════════════════════════════════════════════════════
+loadDashboard();
+</script>
+</body>
+</html>

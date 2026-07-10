@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GymPro — Member</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--red:#e63946;--gold:#ffd60a;--green:#2dc653;--blue:#4dabf7;--orange:#ff9500;--purple:#9d4edd;--bg:#0a0a0f;--bg2:#111118;--bg3:#1a1a24;--bg4:#22222f;--border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.12);--text:#f0f0f5;--muted:#7a7a8c;--sidebar-w:240px}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;display:flex;min-height:100vh;overflow:hidden}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+.sidebar{width:var(--sidebar-w);height:100vh;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;position:fixed;left:0;top:0;z-index:100;overflow-y:auto}
+.sidebar-logo{padding:24px 20px;border-bottom:1px solid var(--border)}.logo-text{font-family:'Bebas Neue';font-size:28px;letter-spacing:3px}.logo-text span{color:var(--red)}.logo-role{font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-top:2px}
+.sidebar-section{padding:16px 12px 4px;font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;margin:2px 8px;cursor:pointer;color:var(--muted);font-size:14px;font-weight:500;transition:all .15s;border:none;background:none;width:calc(100% - 16px);text-align:left;font-family:'DM Sans'}
+.nav-item:hover{background:var(--bg3);color:var(--text)}.nav-item.active{background:rgba(230,57,70,0.15);color:var(--red);border-left:3px solid var(--red);border-radius:0 8px 8px 0;margin-left:8px;padding-left:9px}
+.nav-item .icon{font-size:16px;width:20px;text-align:center;flex-shrink:0}
+.sidebar-footer{margin-top:auto;padding:16px;border-top:1px solid var(--border)}
+.avatar{width:36px;height:36px;border-radius:10px;background:rgba(77,171,247,0.2);display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue';font-size:16px;color:var(--blue);flex-shrink:0}
+.user-info{display:flex;align-items:center;gap:10px}.user-name{font-size:13px;font-weight:600}.user-role{font-size:11px;color:var(--muted)}
+.btn-logout{width:100%;margin-top:10px;padding:8px;background:rgba(230,57,70,0.1);border:1px solid rgba(230,57,70,0.2);border-radius:8px;color:var(--red);font-size:13px;font-family:'DM Sans';cursor:pointer;transition:all .15s}.btn-logout:hover{background:rgba(230,57,70,0.2)}
+.main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;min-height:100vh;overflow:hidden}
+.topbar{height:64px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:50}
+.page-title{font-family:'Bebas Neue';font-size:24px;letter-spacing:2px}
+.content{flex:1;overflow-y:auto;padding:28px}
+.tab-panel{display:none}.tab-panel.active{display:block}
+
+/* Cards */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px;position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--accent,var(--blue))}
+.stat-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px}
+.stat-val{font-family:'Bebas Neue';font-size:36px;line-height:1;color:var(--accent,var(--text))}
+.stat-sub{font-size:12px;color:var(--muted);margin-top:4px}
+.stat-icon{position:absolute;right:16px;top:50%;transform:translateY(-50%);font-size:36px;opacity:.12}
+
+/* Profile */
+.profile-card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:24px}
+.profile-banner{height:100px;background:linear-gradient(135deg, rgba(230,57,70,0.3), rgba(77,171,247,0.3));position:relative}
+.profile-body{padding:0 24px 24px;position:relative}
+.profile-avatar{width:72px;height:72px;border-radius:16px;background:var(--blue);display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue';font-size:32px;color:#fff;border:3px solid var(--bg2);margin-top:-36px;margin-bottom:12px}
+.profile-name{font-family:'Bebas Neue';font-size:28px;letter-spacing:1px}
+.profile-plan{display:inline-block;padding:4px 14px;border-radius:20px;background:rgba(255,214,10,0.15);color:var(--gold);font-size:12px;font-weight:600;margin-top:4px}
+.info-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:20px}
+.info-item{background:var(--bg3);border-radius:10px;padding:14px}
+.info-item-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+.info-item-val{font-size:14px;font-weight:500}
+.plan-features-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.feat-chip{background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:3px 12px;font-size:12px;color:var(--muted)}
+
+/* Workout */
+.day-group{margin-bottom:20px}
+.day-label{font-family:'Bebas Neue';font-size:18px;letter-spacing:1px;margin-bottom:10px;color:var(--blue)}
+.workout-row{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.workout-name{font-weight:600;font-size:14px}
+.workout-meta{font-size:12px;color:var(--muted);margin-top:3px}
+.workout-stats{display:flex;gap:12px;font-size:13px}
+.ws{background:var(--bg3);padding:4px 10px;border-radius:6px;font-weight:600}
+
+/* Classes */
+.class-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+.class-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px;transition:border-color .15s}
+.class-card:hover{border-color:var(--border2)}
+.class-card.enrolled{border-color:rgba(45,198,83,0.4);background:rgba(45,198,83,0.03)}
+.class-name{font-weight:700;font-size:16px;margin-bottom:4px}
+.class-meta{font-size:12px;color:var(--muted);margin-bottom:12px;display:flex;flex-direction:column;gap:3px}
+.class-day{display:inline-block;padding:3px 10px;border-radius:6px;background:rgba(77,171,247,0.15);color:var(--blue);font-size:12px;font-weight:600}
+
+/* Payment */
+.payment-row{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px;display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+
+/* Goals */
+.goal-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:flex-start}
+.goal-title{font-weight:600;margin-bottom:4px}
+.goal-desc{font-size:13px;color:var(--muted)}
+
+/* Metrics */
+.metrics-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.metric-box{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center}
+.metric-val{font-family:'Bebas Neue';font-size:32px;color:var(--accent,var(--blue))}
+.metric-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:2px}
+
+/* Announcements */
+.ann-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:12px;border-left:3px solid var(--blue)}
+
+/* Buttons */
+.btn{padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:'DM Sans';transition:all .15s;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:var(--red);color:#fff}.btn-primary:hover{background:#c1121f}
+.btn-secondary{background:var(--bg3);color:var(--text);border:1px solid var(--border2)}.btn-secondary:hover{background:var(--bg4)}
+.btn-success{background:rgba(45,198,83,0.15);color:var(--green);border:1px solid rgba(45,198,83,0.3)}.btn-success:hover{background:rgba(45,198,83,0.25)}
+.btn-danger{background:rgba(230,57,70,0.1);color:var(--red);border:1px solid rgba(230,57,70,0.2)}.btn-danger:hover{background:rgba(230,57,70,0.2)}
+.btn-sm{padding:6px 12px;font-size:12px}.btn-icon{padding:7px;border-radius:7px}
+.checkin-btn{width:100%;padding:18px;font-family:'Bebas Neue';font-size:22px;letter-spacing:3px;background:var(--red);color:#fff;border:none;border-radius:12px;cursor:pointer;transition:all .2s;margin-bottom:20px}
+.checkin-btn:hover{background:#c1121f;transform:translateY(-2px)}
+.checkin-btn:active{transform:translateY(0)}
+
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;backdrop-filter:blur(4px)}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:16px;padding:28px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;transform:scale(.95);transition:transform .2s}
+.modal-overlay.open .modal{transform:scale(1)}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+.modal-title{font-family:'Bebas Neue';font-size:24px;letter-spacing:1px}
+.modal-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:20px;padding:4px}
+.modal-footer{display:flex;gap:10px;justify-content:flex-end;margin-top:24px;padding-top:20px;border-top:1px solid var(--border)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-col-full{grid-column:1/-1}
+.fg{display:flex;flex-direction:column;gap:6px}
+.fg label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+.fg input,.fg select,.fg textarea{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-size:13px;font-family:'DM Sans';outline:none;transition:border-color .15s;width:100%}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--blue)}
+.fg select option{background:var(--bg3)}
+.fg textarea{resize:vertical;min-height:80px}
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.section-title{font-family:'Bebas Neue';font-size:22px;letter-spacing:1px}
+.chart-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:20px}
+.chart-title{font-size:14px;font-weight:600;margin-bottom:16px}
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.badge-active{background:rgba(45,198,83,0.15);color:var(--green)}
+.badge-completed{background:rgba(77,171,247,0.15);color:var(--blue)}
+.badge-cancelled{background:rgba(230,57,70,0.15);color:var(--red)}
+.badge-paid{background:rgba(45,198,83,0.15);color:var(--green)}
+.badge-pending{background:rgba(255,149,0,0.15);color:var(--orange)}
+.empty-state{text-align:center;padding:48px 24px;color:var(--muted)}
+.empty-icon{font-size:48px;margin-bottom:12px}
+.att-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;margin-top:16px}
+.att-item{background:var(--bg3);border-radius:8px;padding:10px 12px;font-size:12px;border-left:3px solid var(--green)}
+.att-date{font-weight:600;margin-bottom:2px}
+.att-time{color:var(--muted)}
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-logo"><div class="logo-text">GYM<span>PRO</span></div><div class="logo-role">Member Portal</div></div>
+  <div class="sidebar-section">My Space</div>
+  <button class="nav-item active" onclick="switchTab('home')"><span class="icon">🏠</span> Home</button>
+  <button class="nav-item" onclick="switchTab('profile')"><span class="icon">👤</span> Profile</button>
+  <button class="nav-item" onclick="switchTab('checkin')"><span class="icon">📅</span> Check-In</button>
+  <div class="sidebar-section">Training</div>
+  <button class="nav-item" onclick="switchTab('workouts')"><span class="icon">💪</span> My Workouts</button>
+  <button class="nav-item" onclick="switchTab('metrics')"><span class="icon">📏</span> Body Metrics</button>
+  <button class="nav-item" onclick="switchTab('goals')"><span class="icon">🎯</span> My Goals</button>
+  <div class="sidebar-section">Gym</div>
+  <button class="nav-item" onclick="switchTab('classes')"><span class="icon">🏃</span> Classes</button>
+  <button class="nav-item" onclick="switchTab('payments')"><span class="icon">💰</span> My Payments</button>
+  <button class="nav-item" onclick="switchTab('announcements')"><span class="icon">📢</span> Announcements</button>
+  <div class="sidebar-footer">
+    <div class="user-info">
+      <div class="avatar" id="sb-avatar">M</div>
+      <div><div class="user-name" id="sb-name">Member</div><div class="user-role">Member</div></div>
+    </div>
+    <button class="btn-logout" onclick="logout()">🚪 Sign Out</button>
+  </div>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <div class="page-title" id="page-title">HOME</div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <span id="plan-badge" style="font-size:13px"></span>
+      <span id="topbar-date" style="font-size:13px;color:var(--muted)"></span>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- HOME -->
+    <div class="tab-panel active" id="tab-home">
+      <div class="stats-grid">
+        <div class="stat-card" style="--accent:var(--blue)"><div class="stat-label">Check-ins This Month</div><div class="stat-val" id="h-checkins">—</div><div class="stat-sub">Sessions attended</div><div class="stat-icon">📅</div></div>
+        <div class="stat-card" style="--accent:var(--green)"><div class="stat-label">Plan Days Left</div><div class="stat-val" id="h-days">—</div><div class="stat-sub">Until expiry</div><div class="stat-icon">⏰</div></div>
+        <div class="stat-card" style="--accent:var(--gold)"><div class="stat-label">Workout Exercises</div><div class="stat-val" id="h-workouts">—</div><div class="stat-sub">In my plan</div><div class="stat-icon">💪</div></div>
+        <div class="stat-card" style="--accent:var(--purple)"><div class="stat-label">Active Goals</div><div class="stat-val" id="h-goals">—</div><div class="stat-sub">In progress</div><div class="stat-icon">🎯</div></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">📈 My Attendance (Last 30 Days)</div>
+        <div style="height:200px;position:relative"><canvas id="chart-home-att"></canvas></div>
+      </div>
+      <div id="home-anns"></div>
+    </div>
+
+    <!-- PROFILE -->
+    <div class="tab-panel" id="tab-profile">
+      <div class="profile-card">
+        <div class="profile-banner"></div>
+        <div class="profile-body">
+          <div class="profile-avatar" id="p-avatar">M</div>
+          <div class="profile-name" id="p-name">Loading...</div>
+          <div id="p-plan-badge"></div>
+          <div class="info-grid" id="p-info"></div>
+          <div style="margin-top:20px">
+            <div style="font-size:12px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">Plan Features</div>
+            <div class="plan-features-list" id="p-features"></div>
+          </div>
+        </div>
+      </div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:24px">
+        <div class="section-header"><div class="section-title">Update Contact Info</div></div>
+        <div class="form-grid">
+          <div class="fg"><label>Phone</label><input id="up-phone" placeholder="+91 9000000000"></div>
+          <div class="fg"><label>Address</label><input id="up-address" placeholder="Your address"></div>
+          <div class="fg"><label>Emergency Contact</label><input id="up-ec" placeholder="Contact name"></div>
+          <div class="fg"><label>Emergency Phone</label><input id="up-ep" placeholder="Phone number"></div>
+        </div>
+        <div style="margin-top:16px;display:flex;gap:10px">
+          <button class="btn btn-primary" onclick="updateProfile()">Save Changes</button>
+          <button class="btn btn-secondary" onclick="openPasswordModal()">🔒 Change Password</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CHECK-IN -->
+    <div class="tab-panel" id="tab-checkin">
+      <div style="max-width:600px">
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:32px;margin-bottom:20px;text-align:center">
+          <div style="font-size:48px;margin-bottom:16px">🏋️</div>
+          <div style="font-family:'Bebas Neue';font-size:28px;margin-bottom:8px">READY TO WORK OUT?</div>
+          <div style="color:var(--muted);font-size:14px;margin-bottom:24px">Log your gym visit by clicking the button below.</div>
+          <button class="checkin-btn" onclick="doCheckIn()">✅ CHECK IN NOW</button>
+          <div id="checkin-msg" style="font-size:13px;color:var(--muted)"></div>
+        </div>
+        <div class="section-header"><div class="section-title">Recent Check-ins</div></div>
+        <div id="att-list-wrap">Loading...</div>
+      </div>
+    </div>
+
+    <!-- WORKOUTS -->
+    <div class="tab-panel" id="tab-workouts">
+      <div class="section-header"><div class="section-title">My Workout Plan</div></div>
+      <div id="workouts-content"></div>
+    </div>
+
+    <!-- BODY METRICS -->
+    <div class="tab-panel" id="tab-metrics">
+      <div class="section-header">
+        <div class="section-title">Body Metrics</div>
+        <button class="btn btn-primary" onclick="openMetricsModal()">＋ Log Metrics</button>
+      </div>
+      <div id="latest-metrics" class="metrics-grid"></div>
+      <div class="chart-card">
+        <div class="chart-title">⚖️ Weight Progress</div>
+        <div style="height:200px;position:relative"><canvas id="chart-weight"></canvas></div>
+      </div>
+      <div id="metrics-history"></div>
+    </div>
+
+    <!-- GOALS -->
+    <div class="tab-panel" id="tab-goals">
+      <div class="section-header">
+        <div class="section-title">My Fitness Goals</div>
+        <button class="btn btn-primary" onclick="openGoalModal()">＋ Add Goal</button>
+      </div>
+      <div id="goals-list"></div>
+    </div>
+
+    <!-- CLASSES -->
+    <div class="tab-panel" id="tab-classes">
+      <div class="section-header"><div class="section-title">Available Classes</div></div>
+      <div id="classes-grid" class="class-grid"></div>
+    </div>
+
+    <!-- PAYMENTS -->
+    <div class="tab-panel" id="tab-payments">
+      <div class="section-header"><div class="section-title">My Payments</div></div>
+      <div id="payments-list"></div>
+    </div>
+
+    <!-- ANNOUNCEMENTS -->
+    <div class="tab-panel" id="tab-announcements">
+      <div class="section-header"><div class="section-title">Announcements</div></div>
+      <div id="ann-list"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- PASSWORD MODAL -->
+<div class="modal-overlay" id="modal-password">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-header"><div class="modal-title">CHANGE PASSWORD</div><button class="modal-close" onclick="closeModal('modal-password')">✕</button></div>
+    <div class="fg" style="margin-bottom:14px"><label>Current Password</label><input id="pwd-cur" type="password"></div>
+    <div class="fg" style="margin-bottom:14px"><label>New Password</label><input id="pwd-new" type="password"></div>
+    <div class="fg"><label>Confirm New Password</label><input id="pwd-conf" type="password"></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-password')">Cancel</button>
+      <button class="btn btn-primary" onclick="changePassword()">Update Password</button>
+    </div>
+  </div>
+</div>
+
+<!-- METRICS MODAL -->
+<div class="modal-overlay" id="modal-metrics">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">LOG BODY METRICS</div><button class="modal-close" onclick="closeModal('modal-metrics')">✕</button></div>
+    <div class="form-grid">
+      <div class="fg"><label>Date</label><input id="met-date" type="date"></div>
+      <div class="fg"><label>Weight (kg)</label><input id="met-weight" type="number" step="0.1"></div>
+      <div class="fg"><label>Height (cm)</label><input id="met-height" type="number" step="0.1"></div>
+      <div class="fg"><label>Body Fat %</label><input id="met-fat" type="number" step="0.1"></div>
+      <div class="fg"><label>Muscle Mass (kg)</label><input id="met-muscle" type="number" step="0.1"></div>
+      <div class="fg"><label>BMI</label><input id="met-bmi" type="number" step="0.01" placeholder="Auto-calc or enter"></div>
+      <div class="fg"><label>Chest (cm)</label><input id="met-chest" type="number" step="0.1"></div>
+      <div class="fg"><label>Waist (cm)</label><input id="met-waist" type="number" step="0.1"></div>
+      <div class="fg"><label>Hips (cm)</label><input id="met-hips" type="number" step="0.1"></div>
+      <div class="fg"><label>Bicep (cm)</label><input id="met-bicep" type="number" step="0.1"></div>
+      <div class="fg form-col-full"><label>Notes</label><textarea id="met-notes"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-metrics')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveMetrics()">Save Metrics</button>
+    </div>
+  </div>
+</div>
+
+<!-- GOAL MODAL -->
+<div class="modal-overlay" id="modal-goal">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-header"><div class="modal-title" id="modal-goal-title">ADD GOAL</div><button class="modal-close" onclick="closeModal('modal-goal')">✕</button></div>
+    <div class="fg" style="margin-bottom:14px"><label>Goal Title *</label><input id="goal-title" placeholder="e.g. Lose 5kg in 3 months"></div>
+    <div class="fg" style="margin-bottom:14px"><label>Description</label><textarea id="goal-desc" placeholder="Details about your goal..."></textarea></div>
+    <div class="form-grid">
+      <div class="fg"><label>Target Date</label><input id="goal-date" type="date"></div>
+      <div class="fg"><label>Status</label><select id="goal-status"><option>Active</option><option>Completed</option><option>Cancelled</option></select></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-goal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveGoal()">Save Goal</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" style="position:fixed;bottom:28px;right:28px;background:var(--bg3);border:1px solid var(--border2);border-radius:10px;padding:14px 20px;font-size:14px;z-index:9999;display:none;max-width:320px;box-shadow:0 8px 32px rgba(0,0,0,.4)"></div>
+
+<script>
+window.addEventListener('pageshow',(e)=>{if(e.persisted){localStorage.clear();location.replace('login.html');}});
+const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+const token = localStorage.getItem('token');
+const uname = localStorage.getItem('username') || 'Member';
+if (!token || localStorage.getItem('role') !== 'Member') window.location.href = 'login.html';
+document.getElementById('sb-name').textContent = uname;
+document.getElementById('sb-avatar').textContent = uname[0].toUpperCase();
+document.getElementById('topbar-date').textContent = new Date().toLocaleDateString('en-IN',{weekday:'short',month:'short',day:'numeric'});
+
+let profileData = null, metricsData = [], goalsData = [], editGoalId = null;
+let weightChart = null, attChart = null;
+
+async function api(path, opts={}) {
+  opts.headers = {'Authorization':`Bearer ${token}`,'Content-Type':'application/json',...opts.headers};
+  const res = await fetch('/api/member/' + path, opts);
+  if(res.status===401){toast('Session expired. Redirecting...','error');setTimeout(logout,1500);return res;}if(res.status===403){toast('Access denied.','error');return res;}
+  return res;
+}
+async function authApi(path, opts={}) {
+  opts.headers = {'Authorization':`Bearer ${token}`,'Content-Type':'application/json',...opts.headers};
+  return fetch('/api/auth/' + path, opts);
+}
+
+function toast(msg, ok=true) {
+  const el=document.getElementById('toast');
+  el.textContent=(ok?'✅ ':'❌ ')+msg; el.style.borderColor=ok?'rgba(45,198,83,0.4)':'rgba(230,57,70,0.4)';
+  el.style.display='block'; setTimeout(()=>el.style.display='none',3000);
+}
+function gv(id){return document.getElementById(id)?.value||'';}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+function openModal(id){document.getElementById(id).classList.add('open');}
+function logout(){localStorage.clear();sessionStorage.setItem('logout','1');location.replace('login.html');}
+
+const tabLoaders = { home:loadHome, profile:loadProfile, checkin:loadAttendance, workouts:loadWorkouts, metrics:loadMetrics, goals:loadGoals, classes:loadClasses, payments:loadPayments, announcements:loadAnnouncements };
+function switchTab(name) {
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  event.currentTarget.classList.add('active');
+  document.getElementById('page-title').textContent=name.toUpperCase();
+  if(tabLoaders[name]) tabLoaders[name]();
+}
+
+// ── HOME ────────────────────────────────────────────────────
+async function loadHome() {
+  const [profRes, attRes, workRes, goalsRes, annRes] = await Promise.all([
+    api('profile'), api('attendance'), api('workouts'), api('goals'), api('announcements')
+  ]);
+  const prof = await profRes.json();
+  const att = await attRes.json();
+  const work = await workRes.json();
+  const goals = await goalsRes.json();
+  const anns = await annRes.json();
+
+  const thisMonth = att.filter(a => new Date(a.check_in_time).getMonth() === new Date().getMonth());
+  document.getElementById('h-checkins').textContent = thisMonth.length;
+  if (prof.plan_end_date) {
+    const days = Math.max(0, Math.ceil((new Date(prof.plan_end_date)-new Date())/(1000*60*60*24)));
+    document.getElementById('h-days').textContent = days;
+  } else { document.getElementById('h-days').textContent = '—'; }
+  document.getElementById('h-workouts').textContent = work.length;
+  document.getElementById('h-goals').textContent = goals.filter(g=>g.status==='Active').length;
+
+  if (prof.plan_name) {
+    document.getElementById('plan-badge').innerHTML = `<span style="background:rgba(255,214,10,0.15);color:var(--gold);padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600">${prof.plan_name}</span>`;
+  }
+
+  // Chart
+  const last30 = {};
+  for (let i=29;i>=0;i--) { const d=new Date(); d.setDate(d.getDate()-i); last30[d.toISOString().slice(0,10)]=0; }
+  att.forEach(a => { const d=new Date(a.check_in_time).toISOString().slice(0,10); if(last30[d]!==undefined) last30[d]++; });
+  const ctx = document.getElementById('chart-home-att').getContext('2d');
+  if(attChart) attChart.destroy();
+  attChart = new Chart(ctx, { type:'bar', data:{ labels:Object.keys(last30).map(d=>d.slice(5)), datasets:[{label:'Check-ins',data:Object.values(last30),backgroundColor:'rgba(230,57,70,0.4)',borderColor:'#e63946',borderWidth:1,borderRadius:4}]}, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#7a7a8c',maxTicksLimit:10},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{color:'#7a7a8c',stepSize:1},grid:{color:'rgba(255,255,255,0.04)'},beginAtZero:true}}}});
+
+  document.getElementById('home-anns').innerHTML = anns.slice(0,3).map(a=>`
+    <div class="ann-card"><div style="font-weight:600;margin-bottom:4px">${a.title}</div><div style="font-size:13px;color:var(--muted)">${a.body}</div></div>
+  `).join('');
+}
+
+// ── PROFILE ─────────────────────────────────────────────────
+async function loadProfile() {
+  const res = await api('profile');
+  profileData = await res.json();
+  const p = profileData;
+  document.getElementById('p-avatar').textContent = (p.first_name||'M')[0].toUpperCase();
+  document.getElementById('p-name').textContent = (p.first_name||'') + ' ' + (p.last_name||'');
+  document.getElementById('p-plan-badge').innerHTML = p.plan_name ? `<span class="profile-plan">${p.plan_name}</span>` : '';
+  document.getElementById('p-info').innerHTML = [
+    {l:'Email',v:p.email||'—'},{l:'Phone',v:p.phone||'—'},{l:'Gender',v:p.gender||'—'},
+    {l:'Date of Birth',v:p.date_of_birth||'—'},{l:'Joined',v:p.join_date?new Date(p.join_date).toLocaleDateString('en-IN'):'—'},
+    {l:'Status',v:p.status||'—'},{l:'Plan Expires',v:p.plan_end_date||'—'},{l:'Trainer',v:p.trainer_name||'Unassigned'},
+    {l:'Emergency',v:p.emergency_contact||'—'},{l:'Emergency Ph',v:p.emergency_phone||'—'},{l:'Address',v:p.address||'—'}
+  ].map(x=>`<div class="info-item"><div class="info-item-label">${x.l}</div><div class="info-item-val">${x.v}</div></div>`).join('');
+  document.getElementById('p-features').innerHTML = (p.plan_features||'').split('|').filter(Boolean).map(f=>`<span class="feat-chip">${f}</span>`).join('') || '<span style="color:var(--muted);font-size:13px">No plan features</span>';
+  document.getElementById('up-phone').value = p.phone||'';
+  document.getElementById('up-address').value = p.address||'';
+  document.getElementById('up-ec').value = p.emergency_contact||'';
+  document.getElementById('up-ep').value = p.emergency_phone||'';
+}
+
+async function updateProfile() {
+  const body = { phone:gv('up-phone'), address:gv('up-address'), emergency_contact:gv('up-ec'), emergency_phone:gv('up-ep') };
+  const res = await api('profile', {method:'PUT',body:JSON.stringify(body)});
+  const data = await res.json();
+  toast(res.ok ? data.message : (data.message||'Error'), res.ok);
+}
+
+function openPasswordModal() { ['pwd-cur','pwd-new','pwd-conf'].forEach(id=>document.getElementById(id).value=''); openModal('modal-password'); }
+async function changePassword() {
+  const cur=gv('pwd-cur'), nw=gv('pwd-new'), conf=gv('pwd-conf');
+  if (!cur||!nw) return toast('All fields required.', false);
+  if (nw!==conf) return toast('Passwords do not match.', false);
+  if (nw.length<6) return toast('Password must be at least 6 characters.', false);
+  const res = await authApi('change-password', {method:'POST',body:JSON.stringify({current_password:cur,new_password:nw})});
+  const data = await res.json();
+  toast(res.ok ? data.message : (data.message||'Error'), res.ok);
+  if (res.ok) closeModal('modal-password');
+}
+
+// ── ATTENDANCE ──────────────────────────────────────────────
+async function doCheckIn() {
+  const res = await api('attendance', {method:'POST'});
+  const data = await res.json();
+  document.getElementById('checkin-msg').textContent = data.message || (res.ok ? 'Checked in!' : 'Error');
+  document.getElementById('checkin-msg').style.color = res.ok ? 'var(--green)' : 'var(--red)';
+  if (res.ok) loadAttendance();
+}
+
+async function loadAttendance() {
+  const res = await api('attendance');
+  const records = await res.json();
+  const wrap = document.getElementById('att-list-wrap');
+  if (!records.length) { wrap.innerHTML = '<div class="empty-state"><div class="empty-icon">📅</div>No check-ins yet</div>'; return; }
+  wrap.innerHTML = `<div class="att-list">${records.slice(0,30).map(a=>{
+    const dt = new Date(a.check_in_time);
+    return `<div class="att-item"><div class="att-date">${dt.toLocaleDateString('en-IN',{weekday:'short',month:'short',day:'numeric'})}</div><div class="att-time">${dt.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})}</div></div>`;
+  }).join('')}</div>`;
+}
+
+// ── WORKOUTS ─────────────────────────────────────────────────
+async function loadWorkouts() {
+  const res = await api('workouts');
+  const workouts = await res.json();
+  const el = document.getElementById('workouts-content');
+  if (!workouts.length) { el.innerHTML = '<div class="empty-state"><div class="empty-icon">💪</div>No workout plan assigned yet. Contact your trainer.</div>'; return; }
+  const byDay = {};
+  const dayOrder = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+  workouts.forEach(w => { if(!byDay[w.day]) byDay[w.day]=[]; byDay[w.day].push(w); });
+  el.innerHTML = dayOrder.filter(d=>byDay[d]).map(day=>`
+    <div class="day-group">
+      <div class="day-label">${day}</div>
+      ${byDay[day].map(w=>`
+        <div class="workout-row">
+          <div>
+            <div class="workout-name">${w.workout_name}</div>
+            <div class="workout-meta">${w.notes||''}</div>
+          </div>
+          <div class="workout-stats">
+            ${w.sets?`<span class="ws">${w.sets} sets</span>`:''}
+            ${w.reps?`<span class="ws">${w.reps} reps</span>`:''}
+            ${w.weight?`<span class="ws">${w.weight}</span>`:''}
+            ${w.duration_mins?`<span class="ws">${w.duration_mins} min</span>`:''}
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `).join('');
+}
+
+// ── METRICS ──────────────────────────────────────────────────
+async function loadMetrics() {
+  const res = await api('metrics');
+  metricsData = await res.json();
+  const latest = metricsData[0] || {};
+  const metricsEl = document.getElementById('latest-metrics');
+  const fields = [{l:'Weight',v:latest.weight_kg,u:'kg',a:'--blue'},{l:'Body Fat',v:latest.body_fat_pct,u:'%',a:'--red'},{l:'Muscle Mass',v:latest.muscle_mass_kg,u:'kg',a:'--green'},{l:'BMI',v:latest.bmi,u:'',a:'--gold'}];
+  metricsEl.innerHTML = fields.map(f=>`<div class="metric-box" style="--accent:var(${f.a})"><div class="metric-val">${f.v!=null?f.v+''+f.u:'—'}</div><div class="metric-label">${f.l}</div></div>`).join('');
+
+  // Weight chart
+  const wData = metricsData.filter(m=>m.weight_kg).reverse();
+  const ctx = document.getElementById('chart-weight').getContext('2d');
+  if(weightChart) weightChart.destroy();
+  if(wData.length) weightChart = new Chart(ctx, {type:'line',data:{labels:wData.map(m=>m.recorded_date),datasets:[{label:'Weight (kg)',data:wData.map(m=>m.weight_kg),borderColor:'#4dabf7',backgroundColor:'rgba(77,171,247,0.1)',fill:true,tension:0.4,pointRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#7a7a8c'}}},scales:{x:{ticks:{color:'#7a7a8c'}},y:{ticks:{color:'#7a7a8c'},grid:{color:'rgba(255,255,255,0.04)'}}}}});
+
+  const hist = document.getElementById('metrics-history');
+  hist.innerHTML = metricsData.length ? `
+    <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:1px;margin-bottom:12px">History</div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden">
+      <table style="width:100%;border-collapse:collapse">
+        <thead><tr>${['Date','Weight','Height','Body Fat','Muscle','BMI','Waist','Notes'].map(h=>`<th style="padding:10px 12px;text-align:left;font-size:11px;color:var(--muted);background:var(--bg3);text-transform:uppercase;letter-spacing:1px">${h}</th>`).join('')}</tr></thead>
+        <tbody>${metricsData.map(m=>`<tr style="border-top:1px solid var(--border)">
+          <td style="padding:10px 12px;font-size:13px">${m.recorded_date}</td>
+          <td style="padding:10px 12px;font-size:13px">${m.weight_kg||'—'}${m.weight_kg?'kg':''}</td>
+          <td style="padding:10px 12px;font-size:13px">${m.height_cm||'—'}${m.height_cm?'cm':''}</td>
+          <td style="padding:10px 12px;font-size:13px">${m.body_fat_pct!=null?m.body_fat_pct+'%':'—'}</td>
+          <td style="padding:10px 12px;font-size:13px">${m.muscle_mass_kg||'—'}${m.muscle_mass_kg?'kg':''}</td>
+          <td style="padding:10px 12px;font-size:13px">${m.bmi||'—'}</td>
+          <td style="padding:10px 12px;font-size:13px">${m.waist_cm||'—'}${m.waist_cm?'cm':''}</td>
+          <td style="padding:10px 12px;font-size:13px;color:var(--muted)">${m.notes||'—'}</td>
+        </tr>`).join('')}</tbody>
+      </table>
+    </div>` : '';
+}
+
+function openMetricsModal() {
+  const today = new Date().toISOString().slice(0,10);
+  document.getElementById('met-date').value = today;
+  ['met-weight','met-height','met-fat','met-muscle','met-bmi','met-chest','met-waist','met-hips','met-bicep','met-notes'].forEach(id=>document.getElementById(id).value='');
+  openModal('modal-metrics');
+}
+async function saveMetrics() {
+  const body = { recorded_date:gv('met-date'), weight_kg:gv('met-weight')||null, height_cm:gv('met-height')||null, body_fat_pct:gv('met-fat')||null, muscle_mass_kg:gv('met-muscle')||null, bmi:gv('met-bmi')||null, chest_cm:gv('met-chest')||null, waist_cm:gv('met-waist')||null, hips_cm:gv('met-hips')||null, bicep_cm:gv('met-bicep')||null, notes:gv('met-notes') };
+  const res = await api('metrics', {method:'POST',body:JSON.stringify(body)});
+  const data = await res.json();
+  toast(res.ok?data.message:(data.message||'Error'), res.ok);
+  if(res.ok) { closeModal('modal-metrics'); loadMetrics(); }
+}
+
+// ── GOALS ────────────────────────────────────────────────────
+async function loadGoals() {
+  const res = await api('goals');
+  goalsData = await res.json();
+  const el = document.getElementById('goals-list');
+  if (!goalsData.length) { el.innerHTML='<div class="empty-state"><div class="empty-icon">🎯</div>No goals yet. Set your first fitness goal!</div>'; return; }
+  el.innerHTML = goalsData.map(g=>`
+    <div class="goal-card">
+      <div style="flex:1">
+        <div class="goal-title">${g.title}</div>
+        <div class="goal-desc">${g.description||''}</div>
+        <div style="margin-top:8px;display:flex;gap:8px;align-items:center">
+          <span class="badge badge-${g.status.toLowerCase()}">${g.status}</span>
+          ${g.target_date?`<span style="font-size:12px;color:var(--muted)">🗓️ ${g.target_date}</span>`:''}
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;margin-left:16px">
+        <button class="btn btn-secondary btn-sm btn-icon" onclick="editGoal(${g.id})">✏️</button>
+        <button class="btn btn-danger btn-sm btn-icon" onclick="deleteGoal(${g.id})">🗑️</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function openGoalModal(id=null) {
+  editGoalId = id;
+  document.getElementById('modal-goal-title').textContent = id ? 'EDIT GOAL' : 'ADD GOAL';
+  if (!id) { ['goal-title','goal-desc','goal-date'].forEach(i=>document.getElementById(i).value=''); document.getElementById('goal-status').value='Active'; }
+  else {
+    const g = goalsData.find(x=>x.id==id);
+    if(g) { document.getElementById('goal-title').value=g.title; document.getElementById('goal-desc').value=g.description||''; document.getElementById('goal-date').value=g.target_date||''; document.getElementById('goal-status').value=g.status; }
+  }
+  openModal('modal-goal');
+}
+function editGoal(id) { openGoalModal(id); }
+async function saveGoal() {
+  const body = { title:gv('goal-title'), description:gv('goal-desc'), target_date:gv('goal-date'), status:gv('goal-status') };
+  if(!body.title) return toast('Goal title required.', false);
+  const res = await api(editGoalId?`goals/${editGoalId}`:'goals', {method:editGoalId?'PUT':'POST',body:JSON.stringify(body)});
+  const data = await res.json();
+  toast(res.ok?data.message:(data.message||'Error'), res.ok);
+  if(res.ok) { closeModal('modal-goal'); loadGoals(); }
+}
+async function deleteGoal(id) {
+  if(!confirm('Delete this goal?')) return;
+  const res = await api(`goals/${id}`, {method:'DELETE'});
+  const data = await res.json();
+  toast(data.message, res.ok); if(res.ok) loadGoals();
+}
+
+// ── CLASSES ──────────────────────────────────────────────────
+async function loadClasses() {
+  const res = await api('classes');
+  const classes = await res.json();
+  const el = document.getElementById('classes-grid');
+  if(!classes.length) { el.innerHTML='<div class="empty-state"><div class="empty-icon">🏃</div>No classes available</div>'; return; }
+  el.innerHTML = classes.map(c=>`
+    <div class="class-card ${c.is_enrolled?'enrolled':''}">
+      <div class="class-name">${c.name}</div>
+      <div class="class-meta">
+        <span><span class="class-day">${c.schedule_day}</span> &nbsp; ${c.start_time}–${c.end_time}</span>
+        <span>👤 ${c.trainer_name||'No trainer'}</span>
+        <span>📌 ${c.category||'—'} &nbsp; | &nbsp; ${c.enrolled_count}/${c.capacity} enrolled</span>
+        ${c.description?`<span style="color:var(--muted)">${c.description}</span>`:''}
+      </div>
+      <div style="display:flex;gap:8px">
+        ${c.is_enrolled
+          ? `<button class="btn btn-danger btn-sm" onclick="unenroll(${c.id})">✕ Unenroll</button><span class="badge badge-active">Enrolled</span>`
+          : c.enrolled_count>=c.capacity
+            ? `<button class="btn btn-secondary btn-sm" disabled style="opacity:.5">Class Full</button>`
+            : `<button class="btn btn-success btn-sm" onclick="enroll(${c.id})">＋ Enroll</button>`
+        }
+      </div>
+    </div>
+  `).join('');
+}
+
+async function enroll(classId) {
+  const res = await api(`classes/${classId}/enroll`, {method:'POST'});
+  const data = await res.json();
+  toast(res.ok?data.message:(data.message||'Error'), res.ok); if(res.ok) loadClasses();
+}
+async function unenroll(classId) {
+  if(!confirm('Remove yourself from this class?')) return;
+  const res = await api(`classes/${classId}/enroll`, {method:'DELETE'});
+  const data = await res.json();
+  toast(data.message, res.ok); if(res.ok) loadClasses();
+}
+
+// ── PAYMENTS ─────────────────────────────────────────────────
+async function loadPayments() {
+  const res = await api('payments');
+  const payments = await res.json();
+  const el = document.getElementById('payments-list');
+  if(!payments.length) { el.innerHTML='<div class="empty-state"><div class="empty-icon">💰</div>No payment records</div>'; return; }
+  el.innerHTML = payments.map(p=>`
+    <div class="payment-row">
+      <div>
+        <div style="font-weight:600">${p.plan_name||'Payment'}</div>
+        <div style="font-size:12px;color:var(--muted)">${p.receipt_no||''} &nbsp;·&nbsp; ${p.method} &nbsp;·&nbsp; ${new Date(p.payment_date).toLocaleDateString('en-IN')}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="font-family:'Bebas Neue';font-size:22px;color:var(--green)">₹${(p.amount||0).toLocaleString('en-IN')}</span>
+        <span class="badge badge-${p.status.toLowerCase()}">${p.status}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── ANNOUNCEMENTS ─────────────────────────────────────────────
+async function loadAnnouncements() {
+  const res = await api('announcements');
+  const anns = await res.json();
+  const el = document.getElementById('ann-list');
+  if(!anns.length) { el.innerHTML='<div class="empty-state"><div class="empty-icon">📢</div>No announcements</div>'; return; }
+  el.innerHTML = anns.map(a=>`
+    <div class="ann-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+        <div style="font-weight:600;font-size:15px">${a.title}</div>
+        <div style="font-size:11px;color:var(--muted)">${new Date(a.created_at).toLocaleDateString('en-IN')}</div>
+      </div>
+      <div style="color:var(--muted);font-size:14px;line-height:1.6">${a.body}</div>
+    </div>
+  `).join('');
+}
+
+// Init
+loadHome();
+</script>
+</body>
+</html>

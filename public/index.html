@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>GymPro</title>
+</head>
+<body>
+<script>
+  const token = localStorage.getItem('token');
+  const role = localStorage.getItem('role');
+  if (token && role === 'Admin') location.replace('admin.html');
+  else if (token && role === 'Trainer') location.replace('trainer.html');
+  else if (token && role === 'Member') location.replace('member.html');
+  else location.replace('home.html');
+</script>
+</body>
+</html>
