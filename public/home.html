@@ -92,25 +92,6 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:18px 60px;display:fl
 .role-member .role-cta{background:rgba(77,171,247,.12);color:var(--blue);border:1px solid rgba(77,171,247,.25)}
 .role-member .role-cta:hover{background:rgba(77,171,247,.22)}
 
-/* DB ACCESS */
-.db-section{background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:80px 60px}
-.db-inner{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}
-.db-title{font-family:'Bebas Neue';font-size:42px;letter-spacing:2px;margin-bottom:14px}
-.db-sub{color:var(--muted);font-size:15px;line-height:1.7;margin-bottom:28px}
-.db-methods{display:flex;flex-direction:column;gap:14px}
-.db-method{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:16px 18px;display:flex;gap:14px;align-items:flex-start}
-.db-method-icon{font-size:22px;flex-shrink:0;margin-top:2px}
-.db-method-title{font-weight:600;font-size:14px;margin-bottom:3px}
-.db-method-desc{font-size:13px;color:var(--muted)}
-.db-method-tag{display:inline-block;padding:2px 8px;background:rgba(255,214,10,.12);color:var(--gold);border-radius:4px;font-size:10px;font-weight:700;letter-spacing:.5px;margin-bottom:4px}
-.code-block{background:var(--bg3);border:1px solid var(--border);border-radius:14px;overflow:hidden}
-.code-header{padding:12px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
-.code-title{font-size:12px;color:var(--muted);font-weight:600;letter-spacing:1px;text-transform:uppercase}
-.code-dots{display:flex;gap:6px}
-.code-dot{width:10px;height:10px;border-radius:50%}
-.code-body{padding:20px;font-family:'Courier New',monospace;font-size:13px;line-height:1.8;overflow-x:auto}
-.code-body .c-green{color:#2dc653}.code-body .c-blue{color:#4dabf7}.code-body .c-red{color:#e63946}.code-body .c-gold{color:#ffd60a}.code-body .c-muted{color:#7a7a8c}
-
 /* TECH STACK */
 .tech-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-top:48px}
 .tech-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px 14px;text-align:center;transition:border-color .2s}
@@ -151,7 +132,6 @@ footer{background:var(--bg2);border-top:1px solid var(--border);padding:40px 60p
   <div class="nav-links">
     <a href="#features">Features</a>
     <a href="#roles">Dashboards</a>
-    <a href="#database">Database</a>
     <a href="#tech">Tech Stack</a>
   </div>
   <div class="nav-cta">
@@ -264,96 +244,6 @@ footer{background:var(--bg2);border-top:1px solid var(--border);padding:40px 60p
 </div>
 </div>
 
-<!-- DATABASE ACCESS -->
-<div id="database">
-<div class="db-section">
-  <div class="db-inner">
-    <div>
-      <div class="section-tag">Database</div>
-      <div class="db-title">HOW TO ACCESS THE DATABASE</div>
-      <div class="db-sub">GymPro uses SQLite — a file-based database stored as <code style="background:var(--bg3);padding:2px 6px;border-radius:4px;font-size:12px">gym.sqlite</code> in the project root. Here are all the ways to view and manage it:</div>
-      <div class="db-methods">
-        <div class="db-method">
-          <div class="db-method-icon">💻</div>
-          <div>
-            <div class="db-method-tag">RECOMMENDED</div>
-            <div class="db-method-title">DB Browser for SQLite (GUI)</div>
-            <div class="db-method-desc">Download free from <strong>sqlitebrowser.org</strong> → File → Open → select <code style="background:var(--bg);padding:1px 5px;border-radius:3px;font-size:11px">GymPro/gym.sqlite</code>. Browse tables, run SQL queries, edit data visually.</div>
-          </div>
-        </div>
-        <div class="db-method">
-          <div class="db-method-icon">🌐</div>
-          <div>
-            <div class="db-method-tag">BUILT-IN</div>
-            <div class="db-method-title">GymPro Admin Panel</div>
-            <div class="db-method-desc">All data is accessible through the Admin dashboard — Members, Payments, Equipment, Classes, Attendance and more — no external tools needed.</div>
-          </div>
-        </div>
-        <div class="db-method">
-          <div class="db-method-icon">⌨️</div>
-          <div>
-            <div class="db-method-tag">TERMINAL</div>
-            <div class="db-method-title">SQLite3 CLI</div>
-            <div class="db-method-desc">Run <code style="background:var(--bg);padding:1px 5px;border-radius:3px;font-size:11px">sqlite3 GymPro/gym.sqlite</code> in terminal. Then use <code style="background:var(--bg);padding:1px 5px;border-radius:3px;font-size:11px">.tables</code>, <code style="background:var(--bg);padding:1px 5px;border-radius:3px;font-size:11px">.schema members</code>, or any SQL query.</div>
-          </div>
-        </div>
-        <div class="db-method">
-          <div class="db-method-icon">🔌</div>
-          <div>
-            <div class="db-method-tag">VS CODE</div>
-            <div class="db-method-title">SQLite Viewer Extension</div>
-            <div class="db-method-desc">Install <strong>"SQLite Viewer"</strong> by Florian Klampfer from VS Code extensions. Then click the <code style="background:var(--bg);padding:1px 5px;border-radius:3px;font-size:11px">gym.sqlite</code> file to browse tables directly in the editor.</div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div>
-      <div class="code-block">
-        <div class="code-header">
-          <span class="code-title">SQLite Quick Reference</span>
-          <div class="code-dots"><div class="code-dot" style="background:#ff5f57"></div><div class="code-dot" style="background:#febc2e"></div><div class="code-dot" style="background:#28c840"></div></div>
-        </div>
-        <div class="code-body">
-<span class="c-muted">-- Open database in terminal</span>
-<span class="c-green">sqlite3</span> GymPro/gym.sqlite
-
-<span class="c-muted">-- List all tables</span>
-<span class="c-blue">.tables</span>
-
-<span class="c-muted">-- View all members</span>
-<span class="c-gold">SELECT</span> * <span class="c-gold">FROM</span> members;
-
-<span class="c-muted">-- View payments with member names</span>
-<span class="c-gold">SELECT</span> p.*, m.first_name
-<span class="c-gold">FROM</span> payments p
-<span class="c-gold">JOIN</span> members m <span class="c-gold">ON</span> p.member_id = m.id;
-
-<span class="c-muted">-- Monthly revenue summary</span>
-<span class="c-gold">SELECT</span> strftime(<span class="c-red">'%Y-%m'</span>, payment_date),
-       <span class="c-gold">SUM</span>(amount)
-<span class="c-gold">FROM</span> payments
-<span class="c-gold">WHERE</span> status = <span class="c-red">'Paid'</span>
-<span class="c-gold">GROUP BY</span> 1;
-
-<span class="c-muted">-- Count members per plan</span>
-<span class="c-gold">SELECT</span> pl.name, <span class="c-gold">COUNT</span>(m.id)
-<span class="c-gold">FROM</span> plans pl
-<span class="c-gold">LEFT JOIN</span> members m <span class="c-gold">ON</span> pl.id = m.plan_id
-<span class="c-gold">GROUP BY</span> pl.name;
-
-<span class="c-muted">-- Quit SQLite CLI</span>
-<span class="c-blue">.quit</span>
-        </div>
-      </div>
-      <div style="margin-top:16px;padding:14px 18px;background:rgba(255,214,10,.06);border:1px solid rgba(255,214,10,.2);border-radius:10px">
-        <div style="font-size:12px;font-weight:700;color:var(--gold);margin-bottom:4px">💡 Reset the Database</div>
-        <div style="font-size:13px;color:var(--muted)">Delete <code style="background:var(--bg);padding:1px 5px;border-radius:3px">GymPro/gym.sqlite</code> and restart the server — it will auto-create and re-seed all demo data.</div>
-      </div>
-    </div>
-  </div>
-</div>
-</div>
-
 <!-- TECH STACK -->
 <div id="tech">
 <div class="section">
@@ -388,7 +278,6 @@ footer{background:var(--bg2);border-top:1px solid var(--border);padding:40px 60p
   <div class="footer-links">
     <a href="login.html">Login</a>
     <a href="#features">Features</a>
-    <a href="#database">Database</a>
     <a href="admin.html">Admin</a>
   </div>
 </footer>
