@@ -9,10 +9,7 @@ const app = express();
 try { app.use(require('helmet')({ contentSecurityPolicy: false })); } catch(e) { console.warn('helmet not installed, skipping'); }
 
 // CORS — restrict to same origin in production
-app.use(cors({
-  origin: process.env.ALLOWED_ORIGIN || `http://localhost:${process.env.PORT || 3000}`,
-  credentials: true
-}));
+app.use(cors());
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
